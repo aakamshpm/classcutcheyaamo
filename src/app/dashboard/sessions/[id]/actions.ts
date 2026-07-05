@@ -15,7 +15,7 @@ async function assertOwnsSemester(semesterId: string, userId: string) {
   if (!semester) throw new Error("semester not found");
 }
 
-export type DayStatus = "present" | "absent" | "holiday";
+export type DayStatus = "present" | "absent" | "half_day" | "holiday";
 
 export type ActionResult = { error: string } | { success: true };
 

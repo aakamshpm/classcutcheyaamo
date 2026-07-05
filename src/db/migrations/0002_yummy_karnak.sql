@@ -1,0 +1,1 @@
+ALTER TYPE "public"."day_status" ADD VALUE 'half_day' BEFORE 'holiday';

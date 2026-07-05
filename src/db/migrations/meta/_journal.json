@@ -15,6 +15,13 @@
       "when": 1783251032256,
       "tag": "0001_nervous_punisher",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783255821758,
+      "tag": "0002_yummy_karnak",
+      "breakpoints": true
     }
   ]
 }

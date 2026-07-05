@@ -58,6 +58,8 @@ export function PercentageSummary({
       </p>
       <p className="mt-1 text-sm text-muted">
         {stats.presentDays} present / {stats.workingDays} working days
+        {stats.halfDays > 0 &&
+          ` (incl. ${stats.halfDays} half day${stats.halfDays === 1 ? "" : "s"})`}
       </p>
 
       <div className="mt-3 text-sm">

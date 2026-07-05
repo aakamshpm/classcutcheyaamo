@@ -22,6 +22,8 @@
   --status-absent-bg: #fbebea;
   --status-holiday: #a9a2ea;
   --status-holiday-bg: #edebfb;
+  --status-half: #d99a3d;
+  --status-half-bg: #faf0e0;
 
   --radius: 0.9rem;
 }
@@ -40,6 +42,8 @@
   --color-status-absent-bg: var(--status-absent-bg);
   --color-status-holiday: var(--status-holiday);
   --color-status-holiday-bg: var(--status-holiday-bg);
+  --color-status-half: var(--status-half);
+  --color-status-half-bg: var(--status-half-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -62,12 +66,24 @@
     --status-absent-bg: #362221;
     --status-holiday: #c3baf5;
     --status-holiday-bg: #2a2740;
+    --status-half: #e0ab5f;
+    --status-half-bg: #362a1a;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* browsers don't give buttons a pointer cursor by default, and tailwind's
+   preflight stopped doing it too — set it globally so every clickable
+   button in the app feels clickable */
+button:not(:disabled) {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
 }
 
 /* small reusable pieces so pages don't have to repeat long class strings */

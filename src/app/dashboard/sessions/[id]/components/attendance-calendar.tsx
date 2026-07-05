@@ -29,6 +29,7 @@ function defaultStatus(dateISO: string): DayStatus | null {
 const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
   present: { bg: "var(--status-present)", fg: "#ffffff" },
   absent: { bg: "var(--status-absent)", fg: "#ffffff" },
+  half_day: { bg: "var(--status-half)", fg: "#ffffff" },
   holiday: { bg: "var(--status-holiday-bg)", fg: "var(--status-holiday)" },
   unmarked: { bg: "var(--card)", fg: "var(--muted)" },
 };
@@ -63,13 +64,25 @@ export function AttendanceCalendar({
     setMonth(next.month);
   }
 
+  function isWeekendDay(dateISO: string): boolean {
+    const dow = parseISODate(dateISO).getUTCDay();
+    return dow === 0 || dow === 6;
+  }
+
   function handleDayClick(dateISO: string) {
     if (dateISO < startDate) return;
     if (dateISO > maxSelectable) return;
+    if (isWeekendDay(dateISO)) return; // weekends are always off, not markable
 
     const current = optimisticMarks.get(dateISO) ?? defaultStatus(dateISO);
-    // cycle: unmarked -> present -> absent -> holiday -> unmarked
-    const cycle: (DayStatus | null)[] = ["present", "absent", "holiday", null];
+    // cycle: unmarked -> present -> half day -> absent -> holiday -> unmarked
+    const cycle: (DayStatus | null)[] = [
+      "present",
+      "half_day",
+      "absent",
+      "holiday",
+      null,
+    ];
     const currentIndex = cycle.indexOf(current);
     const next = cycle[(currentIndex + 1) % cycle.length];
 
@@ -131,7 +144,9 @@ export function AttendanceCalendar({
         {weeks.flat().map((dateISO, i) => {
           if (!dateISO) return <div key={i} />;
 
-          const outOfRange = dateISO < startDate || dateISO > maxSelectable;
+          const weekend = isWeekendDay(dateISO);
+          const outOfRange =
+            dateISO < startDate || dateISO > maxSelectable || weekend;
           const explicitStatus = optimisticMarks.get(dateISO);
           const status = explicitStatus ?? defaultStatus(dateISO);
           const holidayName = KERALA_HOLIDAY_MAP.get(dateISO);
@@ -141,6 +156,7 @@ export function AttendanceCalendar({
           let title = holidayName;
           if (dateISO < startDate) title = "before the semester started";
           else if (dateISO > maxSelectable) title = "date not reached yet";
+          else if (weekend) title = "weekend";
 
           return (
             <button
@@ -179,6 +195,7 @@ export function AttendanceCalendar({
 
       <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted">
         <LegendDot color="var(--status-present)" label="present" />
+        <LegendDot color="var(--status-half)" label="half day" />
         <LegendDot color="var(--status-absent)" label="absent" />
         <LegendDot color="var(--status-holiday)" label="holiday" />
         <LegendDot color="var(--card-border)" label="unmarked" />
@@ -186,7 +203,8 @@ export function AttendanceCalendar({
 
       {isPending && <p className="mt-2 text-xs text-muted">saving...</p>}
       <p className="mt-3 text-xs text-muted">
-        tap a day to cycle through present → absent → holiday → unmarked
+        tap a day to cycle through present → half day → absent → holiday →
+        unmarked
       </p>
     </div>
   );

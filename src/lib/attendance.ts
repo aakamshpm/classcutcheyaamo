@@ -1,13 +1,14 @@
 import { isWeekend } from "./date";
 import { KERALA_HOLIDAY_MAP } from "./kerala-holidays";
 
-export type DayStatus = "present" | "absent" | "holiday";
+export type DayStatus = "present" | "absent" | "half_day" | "holiday";
 export type MarkedDay = { date: string; status: DayStatus };
 
 export type AttendanceStats = {
   workingDays: number;
-  presentDays: number;
+  presentDays: number; // half_day counts as 0.5 towards this
   absentDays: number;
+  halfDays: number; // count of half_day marks, for display purposes
   percentage: number | null; // null when there are 0 working days yet
   // how many more days you can safely miss and stay at/above the threshold
   safeToBunk: number;
@@ -42,6 +43,7 @@ export function computeAttendanceStats(
   let workingDays = 0;
   let presentDays = 0;
   let absentDays = 0;
+  let halfDays = 0;
   let unmarkedDays = 0;
 
   while (cursor <= endDateExclusive) {
@@ -52,6 +54,12 @@ export function computeAttendanceStats(
     } else if (status === "absent") {
       workingDays++;
       absentDays++;
+    } else if (status === "half_day") {
+      // morning/afternoon marked separately, only one session attended —
+      // counts as a full working day but half a present day
+      workingDays++;
+      presentDays += 0.5;
+      halfDays++;
     } else if (status === null) {
       // a regular day (not a weekend/kerala holiday) with no explicit mark
       unmarkedDays++;
@@ -89,6 +97,7 @@ export function computeAttendanceStats(
     workingDays,
     presentDays,
     absentDays,
+    halfDays,
     percentage,
     safeToBunk,
     needToAttend,

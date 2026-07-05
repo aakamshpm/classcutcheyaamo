@@ -9,11 +9,14 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 
-// a day is either a normal class day marked present/absent, or a holiday
-// (pre-filled from the kerala calendar, or added by the user themselves)
+// a day is either a normal class day marked present/absent/half_day, or a
+// holiday (pre-filled from the kerala calendar, or added by the user
+// themselves). half_day covers colleges that mark morning/afternoon
+// separately and only one session was attended.
 export const dayStatusEnum = pgEnum("day_status", [
   "present",
   "absent",
+  "half_day",
   "holiday",
 ]);
 
