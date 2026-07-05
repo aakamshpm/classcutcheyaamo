@@ -23,7 +23,9 @@ export default async function DashboardPage() {
     <main className="flex flex-1 flex-col items-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">hey, {session?.user?.name}</h1>
+          <h1 className="text-xl font-bold tracking-tight">
+            hey, {session?.user?.name}
+          </h1>
           <form
             action={async () => {
               "use server";
@@ -32,7 +34,7 @@ export default async function DashboardPage() {
           >
             <button
               type="submit"
-              className="text-sm font-medium text-zinc-500 underline"
+              className="text-sm font-medium text-muted underline"
             >
               log out
             </button>
@@ -40,14 +42,12 @@ export default async function DashboardPage() {
         </div>
 
         {activeSemester ? (
-          <div className="mb-8 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          <div className="card mb-8 p-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
               active semester
             </p>
-            <h2 className="mt-1 text-lg font-semibold">
-              {activeSemester.name}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h2 className="mt-1 text-lg font-bold">{activeSemester.name}</h2>
+            <p className="mt-1 text-sm text-muted">
               started {activeSemester.startDate} · needs{" "}
               {activeSemester.requiredPercentage}%
             </p>
@@ -55,14 +55,14 @@ export default async function DashboardPage() {
             <div className="mt-4">
               <Link
                 href={`/dashboard/sessions/${activeSemester.id}`}
-                className="inline-block rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-50 dark:text-zinc-900"
+                className="btn-primary inline-block px-4 py-2 text-sm"
               >
                 mark attendance
               </Link>
             </div>
 
             <details className="mt-4">
-              <summary className="cursor-pointer text-sm text-zinc-500">
+              <summary className="cursor-pointer text-sm text-muted">
                 sem got over? end it here
               </summary>
               <div className="mt-3">
@@ -71,8 +71,8 @@ export default async function DashboardPage() {
             </details>
           </div>
         ) : (
-          <div className="mb-8 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-            <p className="mb-4 text-sm text-zinc-500">
+          <div className="card mb-8 p-6">
+            <p className="mb-4 text-sm text-muted">
               no active semester right now. start one whenever your sem
               begins.
             </p>
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
 
         {pastSemesters.length > 0 && (
           <div>
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
               past semesters
             </p>
             <ul className="flex flex-col gap-2">
@@ -90,10 +90,10 @@ export default async function DashboardPage() {
                 <li key={s.id}>
                   <Link
                     href={`/dashboard/sessions/${s.id}`}
-                    className="flex items-center justify-between rounded-md border border-zinc-200 px-4 py-3 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                    className="card flex items-center justify-between px-4 py-3 text-sm transition-colors hover:border-primary"
                   >
                     <span className="font-medium">{s.name}</span>
-                    <span className="text-zinc-500">
+                    <span className="text-muted">
                       {s.startDate} → {s.endDate}
                     </span>
                   </Link>

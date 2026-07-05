@@ -23,12 +23,14 @@ function defaultStatus(dateISO: string): DayStatus | null {
   return null; // regular day, unmarked until the user says otherwise
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  present: "bg-emerald-500 text-white",
-  absent: "bg-red-500 text-white",
-  holiday: "bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
-  unmarked:
-    "bg-white text-zinc-700 border border-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-700",
+// tailwind can't see these css vars at build time for arbitrary values in
+// some setups, so status colors are applied via inline style instead of
+// utility classes to guarantee they always match the design tokens
+const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
+  present: { bg: "var(--status-present)", fg: "#ffffff" },
+  absent: { bg: "var(--status-absent)", fg: "#ffffff" },
+  holiday: { bg: "var(--status-holiday-bg)", fg: "var(--status-holiday)" },
+  unmarked: { bg: "var(--card)", fg: "var(--muted)" },
 };
 
 export function AttendanceCalendar({
@@ -90,26 +92,26 @@ export function AttendanceCalendar({
   }
 
   return (
-    <div>
+    <div className="card p-5">
       <div className="mb-4 flex items-center justify-between">
         <button
           type="button"
           onClick={() => goToMonth(-1)}
-          className="rounded-md px-3 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="rounded-full px-3 py-1.5 text-sm text-muted transition-colors hover:bg-card-border"
         >
           ← prev
         </button>
-        <p className="text-sm font-medium">{monthLabel(year, month)}</p>
+        <p className="text-sm font-semibold">{monthLabel(year, month)}</p>
         <button
           type="button"
           onClick={() => goToMonth(1)}
-          className="rounded-md px-3 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="rounded-full px-3 py-1.5 text-sm text-muted transition-colors hover:bg-card-border"
         >
           next →
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-zinc-500">
+      <div className="grid grid-cols-7 gap-1.5 text-center text-xs font-medium text-muted">
         {WEEKDAY_LABELS.map((d) => (
           <div key={d} className="py-1">
             {d}
@@ -117,7 +119,7 @@ export function AttendanceCalendar({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {weeks.flat().map((dateISO, i) => {
           if (!dateISO) return <div key={i} />;
 
@@ -126,6 +128,7 @@ export function AttendanceCalendar({
           const status = explicitStatus ?? defaultStatus(dateISO);
           const holidayName = KERALA_HOLIDAY_MAP.get(dateISO);
           const dayNum = parseISODate(dateISO).getUTCDate();
+          const colors = STATUS_COLORS[status ?? "unmarked"];
 
           return (
             <button
@@ -134,11 +137,27 @@ export function AttendanceCalendar({
               disabled={outOfRange}
               title={holidayName}
               onClick={() => handleDayClick(dateISO)}
-              className={`aspect-square rounded-md text-sm transition-opacity ${
+              style={
                 outOfRange
-                  ? "cursor-default text-zinc-300 dark:text-zinc-700"
-                  : STATUS_STYLES[status ?? "unmarked"]
-              } ${dateISO === today ? "ring-2 ring-offset-1 ring-zinc-900 dark:ring-zinc-50" : ""}`}
+                  ? undefined
+                  : {
+                      background: colors.bg,
+                      color: colors.fg,
+                      border:
+                        status === null
+                          ? "1px solid var(--card-border)"
+                          : "none",
+                    }
+              }
+              className={`aspect-square rounded-lg text-sm font-medium transition-transform ${
+                outOfRange
+                  ? "cursor-default text-card-border"
+                  : "hover:scale-105"
+              } ${
+                dateISO === today
+                  ? "ring-2 ring-offset-2 ring-offset-card ring-primary"
+                  : ""
+              }`}
             >
               {dayNum}
             </button>
@@ -146,25 +165,28 @@ export function AttendanceCalendar({
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-3 text-xs text-zinc-500">
-        <LegendDot className={STATUS_STYLES.present} label="present" />
-        <LegendDot className={STATUS_STYLES.absent} label="absent" />
-        <LegendDot className={STATUS_STYLES.holiday} label="holiday" />
-        <LegendDot className={STATUS_STYLES.unmarked} label="unmarked" />
+      <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted">
+        <LegendDot color="var(--status-present)" label="present" />
+        <LegendDot color="var(--status-absent)" label="absent" />
+        <LegendDot color="var(--status-holiday)" label="holiday" />
+        <LegendDot color="var(--card-border)" label="unmarked" />
       </div>
 
-      {isPending && <p className="mt-2 text-xs text-zinc-400">saving...</p>}
-      <p className="mt-3 text-xs text-zinc-400">
+      {isPending && <p className="mt-2 text-xs text-muted">saving...</p>}
+      <p className="mt-3 text-xs text-muted">
         tap a day to cycle through present → absent → holiday → unmarked
       </p>
     </div>
   );
 }
 
-function LegendDot({ className, label }: { className: string; label: string }) {
+function LegendDot({ color, label }: { color: string; label: string }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span className={`h-3 w-3 rounded-sm ${className}`} />
+      <span
+        className="h-3 w-3 rounded-sm"
+        style={{ background: color }}
+      />
       {label}
     </span>
   );

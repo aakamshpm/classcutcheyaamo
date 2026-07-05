@@ -32,11 +32,13 @@ export default async function SessionPage({
   return (
     <main className="flex flex-1 flex-col items-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Link href="/dashboard" className="text-sm text-zinc-500 underline">
+        <Link href="/dashboard" className="text-sm text-muted underline">
           ← back
         </Link>
-        <h1 className="mt-4 text-xl font-semibold">{semester.name}</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="mt-4 text-2xl font-bold tracking-tight">
+          {semester.name}
+        </h1>
+        <p className="mt-1 text-sm text-muted">
           {semester.startDate}{" "}
           {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"}
         </p>

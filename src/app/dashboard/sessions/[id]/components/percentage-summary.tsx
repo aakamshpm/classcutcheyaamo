@@ -22,7 +22,7 @@ export function PercentageSummary({
 
   if (stats.percentage === null) {
     return (
-      <div className="rounded-lg border border-zinc-200 p-5 text-sm text-zinc-500 dark:border-zinc-800">
+      <div className="card p-6 text-sm text-muted">
         no working days marked yet. tap a day on the calendar below to get
         started.
       </div>
@@ -31,28 +31,21 @@ export function PercentageSummary({
 
   const pct = Math.round(stats.percentage * 1000) / 10;
   const isSafe = stats.percentage >= requiredPercentage / 100;
+  const statusColor = isSafe ? "var(--status-present)" : "var(--status-absent)";
+  const statusBg = isSafe ? "var(--status-present-bg)" : "var(--status-absent-bg)";
 
   return (
     <div
-      className={`rounded-lg border p-5 ${
-        isSafe
-          ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
-          : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-      }`}
+      className="rounded-[var(--radius)] p-6"
+      style={{ background: statusBg, border: `1px solid ${statusColor}33` }}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
         attendance
       </p>
-      <p
-        className={`mt-1 text-4xl font-bold ${
-          isSafe
-            ? "text-emerald-600 dark:text-emerald-400"
-            : "text-red-600 dark:text-red-400"
-        }`}
-      >
+      <p className="mt-1 text-5xl font-bold" style={{ color: statusColor }}>
         {pct}%
       </p>
-      <p className="mt-1 text-sm text-zinc-500">
+      <p className="mt-1 text-sm text-muted">
         {stats.presentDays} present / {stats.workingDays} working days
       </p>
 

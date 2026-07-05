@@ -21,7 +21,7 @@ export function CreateSemesterForm() {
           type="text"
           required
           placeholder="e.g. semester 5"
-          className="rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className="input"
         />
       </div>
 
@@ -29,13 +29,7 @@ export function CreateSemesterForm() {
         <label htmlFor="startDate" className="text-sm font-medium">
           start date
         </label>
-        <input
-          id="startDate"
-          name="startDate"
-          type="date"
-          required
-          className="rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
-        />
+        <input id="startDate" name="startDate" type="date" required className="input" />
       </div>
 
       <div className="flex flex-col gap-1">
@@ -50,22 +44,18 @@ export function CreateSemesterForm() {
           max={100}
           required
           defaultValue={75}
-          className="rounded-md border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className="input"
         />
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-muted">
           most colleges need 75%, but some ask for 70% or 80%
         </p>
       </div>
 
       {state && "error" in state && (
-        <p className="text-sm text-red-600">{state.error}</p>
+        <p className="text-sm text-status-absent">{state.error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-zinc-900 px-4 py-2 font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
-      >
+      <button type="submit" disabled={pending} className="btn-primary py-2.5">
         {pending ? "creating..." : "start semester"}
       </button>
     </form>
