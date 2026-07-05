@@ -17,9 +17,19 @@ export async function createSemester(
 
   const name = String(formData.get("name") ?? "").trim();
   const startDate = String(formData.get("startDate") ?? "");
+  const requiredPercentage = Number(
+    formData.get("requiredPercentage") ?? 75,
+  );
 
   if (name.length < 1) return { error: "give the semester a name" };
   if (!startDate) return { error: "pick a start date" };
+  if (
+    !Number.isInteger(requiredPercentage) ||
+    requiredPercentage < 1 ||
+    requiredPercentage > 100
+  ) {
+    return { error: "required percentage needs to be between 1 and 100" };
+  }
 
   const [active] = await db
     .select({ id: semesters.id })
@@ -39,6 +49,7 @@ export async function createSemester(
     userId: session.user.id,
     name,
     startDate,
+    requiredPercentage,
   });
 
   revalidatePath("/dashboard");

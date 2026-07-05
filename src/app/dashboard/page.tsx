@@ -48,7 +48,8 @@ export default async function DashboardPage() {
               {activeSemester.name}
             </h2>
             <p className="mt-1 text-sm text-zinc-500">
-              started {activeSemester.startDate}
+              started {activeSemester.startDate} · needs{" "}
+              {activeSemester.requiredPercentage}%
             </p>
 
             <div className="mt-4">

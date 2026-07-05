@@ -5,13 +5,20 @@ export function PercentageSummary({
   startDate,
   endDate,
   marks,
+  requiredPercentage,
 }: {
   startDate: string;
   endDate: string | null;
   marks: MarkedDay[];
+  requiredPercentage: number;
 }) {
   const upTo = endDate ?? todayISO();
-  const stats = computeAttendanceStats(startDate, upTo, marks);
+  const stats = computeAttendanceStats(
+    startDate,
+    upTo,
+    marks,
+    requiredPercentage,
+  );
 
   if (stats.percentage === null) {
     return (
@@ -23,7 +30,7 @@ export function PercentageSummary({
   }
 
   const pct = Math.round(stats.percentage * 1000) / 10;
-  const isSafe = stats.percentage >= 0.75;
+  const isSafe = stats.percentage >= requiredPercentage / 100;
 
   return (
     <div
@@ -55,16 +62,21 @@ export function PercentageSummary({
             <p>
               you can safely miss{" "}
               <span className="font-semibold">{stats.safeToBunk}</span> more
-              day{stats.safeToBunk === 1 ? "" : "s"} and stay at 75%+
+              day{stats.safeToBunk === 1 ? "" : "s"} and stay at{" "}
+              {requiredPercentage}%+
             </p>
           ) : (
-            <p>you&apos;re exactly at 75%, one more absence and you&apos;re below</p>
+            <p>
+              you&apos;re exactly at {requiredPercentage}%, one more absence
+              and you&apos;re below
+            </p>
           )
         ) : (
           <p>
             attend the next{" "}
             <span className="font-semibold">{stats.needToAttend}</span> day
-            {stats.needToAttend === 1 ? "" : "s"} in a row to get back to 75%
+            {stats.needToAttend === 1 ? "" : "s"} in a row to get back to{" "}
+            {requiredPercentage}%
           </p>
         )}
       </div>

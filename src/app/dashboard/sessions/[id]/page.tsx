@@ -46,6 +46,7 @@ export default async function SessionPage({
             startDate={semester.startDate}
             endDate={semester.endDate}
             marks={marks}
+            requiredPercentage={semester.requiredPercentage}
           />
         </div>
 

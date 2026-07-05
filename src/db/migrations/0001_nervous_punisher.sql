@@ -1,0 +1,1 @@
+ALTER TABLE "semesters" ADD COLUMN "required_percentage" integer DEFAULT 75 NOT NULL;

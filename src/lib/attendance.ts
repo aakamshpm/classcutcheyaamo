@@ -9,14 +9,12 @@ export type AttendanceStats = {
   presentDays: number;
   absentDays: number;
   percentage: number | null; // null when there are 0 working days yet
-  // how many more days you can safely miss and stay at/above 75%
+  // how many more days you can safely miss and stay at/above the threshold
   safeToBunk: number;
-  // how many more days in a row you'd need to attend to climb back to 75%
-  // (only meaningful when currently below threshold)
+  // how many more days in a row you'd need to attend to climb back to the
+  // threshold (only meaningful when currently below it)
   needToAttend: number;
 };
-
-const THRESHOLD = 0.75;
 
 function defaultStatus(dateISO: string): DayStatus | null {
   if (isWeekend(dateISO)) return "holiday";
@@ -32,7 +30,9 @@ export function computeAttendanceStats(
   startDate: string,
   endDateExclusive: string, // the last day to count, inclusive
   marks: MarkedDay[],
+  requiredPercentage: number = 75, // whole number, e.g. 75 means 75%
 ): AttendanceStats {
+  const threshold = requiredPercentage / 100;
   const markMap = new Map(marks.map((m) => [m.date, m.status]));
 
   let cursor = startDate;
@@ -58,23 +58,23 @@ export function computeAttendanceStats(
 
   const percentage = workingDays === 0 ? null : presentDays / workingDays;
 
-  // safe to bunk: largest n such that presentDays / (workingDays + n) >= 0.75
-  // solved for n: n <= presentDays / 0.75 - workingDays
+  // safe to bunk: largest n such that presentDays / (workingDays + n) >= threshold
+  // solved for n: n <= presentDays / threshold - workingDays
   let safeToBunk = 0;
   if (workingDays > 0) {
     safeToBunk = Math.max(
       0,
-      Math.floor(presentDays / THRESHOLD - workingDays),
+      Math.floor(presentDays / threshold - workingDays),
     );
   }
 
-  // need to attend: smallest n such that (presentDays + n) / (workingDays + n) >= 0.75
-  // solved for n: n >= (0.75 * workingDays - presentDays) / (1 - 0.75)
+  // need to attend: smallest n such that (presentDays + n) / (workingDays + n) >= threshold
+  // solved for n: n >= (threshold * workingDays - presentDays) / (1 - threshold)
   let needToAttend = 0;
-  if (workingDays > 0 && (percentage ?? 1) < THRESHOLD) {
+  if (workingDays > 0 && (percentage ?? 1) < threshold) {
     needToAttend = Math.max(
       0,
-      Math.ceil((THRESHOLD * workingDays - presentDays) / (1 - THRESHOLD)),
+      Math.ceil((threshold * workingDays - presentDays) / (1 - threshold)),
     );
   }
 

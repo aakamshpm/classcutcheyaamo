@@ -6,6 +6,7 @@ import {
   date,
   pgEnum,
   uniqueIndex,
+  integer,
 } from "drizzle-orm/pg-core";
 
 // a day is either a normal class day marked present/absent, or a holiday
@@ -34,6 +35,9 @@ export const semesters = pgTable("semesters", {
   name: text("name").notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date"),
+  // some colleges need 75%, some 80%, some 70% — stored as a whole number
+  // percentage (e.g. 75 means 75%) so the user sets it once per semester
+  requiredPercentage: integer("required_percentage").notNull().default(75),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
