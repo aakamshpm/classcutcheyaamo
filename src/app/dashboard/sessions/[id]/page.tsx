@@ -3,7 +3,9 @@ import { and, eq } from "drizzle-orm";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { semesters } from "@/db/schema";
+import { attendanceDays, semesters } from "@/db/schema";
+import { AttendanceCalendar } from "./components/attendance-calendar";
+import { PercentageSummary } from "./components/percentage-summary";
 
 export default async function SessionPage({
   params,
@@ -22,6 +24,11 @@ export default async function SessionPage({
 
   if (!semester) notFound();
 
+  const marks = await db
+    .select({ date: attendanceDays.date, status: attendanceDays.status })
+    .from(attendanceDays)
+    .where(eq(attendanceDays.semesterId, semester.id));
+
   return (
     <main className="flex flex-1 flex-col items-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -30,12 +37,26 @@ export default async function SessionPage({
         </Link>
         <h1 className="mt-4 text-xl font-semibold">{semester.name}</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          {semester.startDate} {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"}
+          {semester.startDate}{" "}
+          {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"}
         </p>
-        <p className="mt-8 text-sm text-zinc-500">
-          the calendar and attendance marking for this semester land here in
-          the next phase.
-        </p>
+
+        <div className="mt-6">
+          <PercentageSummary
+            startDate={semester.startDate}
+            endDate={semester.endDate}
+            marks={marks}
+          />
+        </div>
+
+        <div className="mt-8">
+          <AttendanceCalendar
+            semesterId={semester.id}
+            startDate={semester.startDate}
+            endDate={semester.endDate}
+            marks={marks}
+          />
+        </div>
       </div>
     </main>
   );
