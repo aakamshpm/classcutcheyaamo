@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
 import { AttendanceCalendar } from "./components/attendance-calendar";
 import { PercentageSummary } from "./components/percentage-summary";
+import { EditStartDateForm } from "./components/edit-start-date-form";
 
 export default async function SessionPage({
   params,
@@ -42,6 +43,12 @@ export default async function SessionPage({
           {semester.startDate}{" "}
           {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"}
         </p>
+        <div className="mt-1">
+          <EditStartDateForm
+            semesterId={semester.id}
+            currentStartDate={semester.startDate}
+          />
+        </div>
 
         <div className="mt-6">
           <PercentageSummary

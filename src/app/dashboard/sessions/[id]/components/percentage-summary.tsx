@@ -12,7 +12,18 @@ export function PercentageSummary({
   marks: MarkedDay[];
   requiredPercentage: number;
 }) {
-  const upTo = endDate ?? todayISO();
+  const today = todayISO();
+
+  if (startDate > today) {
+    return (
+      <div className="card p-6 text-sm text-muted">
+        this semester starts on <span className="font-medium">{startDate}</span>,
+        which hasn&apos;t arrived yet — nothing to mark or track until then.
+      </div>
+    );
+  }
+
+  const upTo = endDate ?? today;
   const stats = computeAttendanceStats(
     startDate,
     upTo,
@@ -73,6 +84,15 @@ export function PercentageSummary({
           </p>
         )}
       </div>
+
+      {stats.unmarkedDays > 0 && (
+        <p className="mt-3 text-xs text-muted">
+          ⚠ {stats.unmarkedDays} day{stats.unmarkedDays === 1 ? "" : "s"} up
+          to today {stats.unmarkedDays === 1 ? "isn't" : "aren't"} marked yet
+          — the percentage above doesn&apos;t include{" "}
+          {stats.unmarkedDays === 1 ? "it" : "them"}.
+        </p>
+      )}
     </div>
   );
 }

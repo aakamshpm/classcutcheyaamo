@@ -17,6 +17,43 @@ async function assertOwnsSemester(semesterId: string, userId: string) {
 
 export type DayStatus = "present" | "absent" | "holiday";
 
+export type ActionResult = { error: string } | { success: true };
+
+export async function updateStartDate(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "not logged in" };
+
+  const semesterId = String(formData.get("semesterId") ?? "");
+  const newStartDate = String(formData.get("startDate") ?? "");
+
+  if (!semesterId || !newStartDate) return { error: "missing info" };
+
+  const [semester] = await db
+    .select({ endDate: semesters.endDate })
+    .from(semesters)
+    .where(
+      and(eq(semesters.id, semesterId), eq(semesters.userId, session.user.id)),
+    )
+    .limit(1);
+
+  if (!semester) return { error: "semester not found" };
+  if (semester.endDate && newStartDate > semester.endDate) {
+    return { error: "start date can't be after the end date" };
+  }
+
+  await db
+    .update(semesters)
+    .set({ startDate: newStartDate })
+    .where(eq(semesters.id, semesterId));
+
+  revalidatePath(`/dashboard/sessions/${semesterId}`);
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function setDayStatus(
   semesterId: string,
   date: string,

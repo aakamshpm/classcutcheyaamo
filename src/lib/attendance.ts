@@ -14,6 +14,9 @@ export type AttendanceStats = {
   // how many more days in a row you'd need to attend to climb back to the
   // threshold (only meaningful when currently below it)
   needToAttend: number;
+  // regular (non-weekend, non-holiday) days in range that have no explicit
+  // present/absent mark yet — the "you still need to fill these in" count
+  unmarkedDays: number;
 };
 
 function defaultStatus(dateISO: string): DayStatus | null {
@@ -39,6 +42,7 @@ export function computeAttendanceStats(
   let workingDays = 0;
   let presentDays = 0;
   let absentDays = 0;
+  let unmarkedDays = 0;
 
   while (cursor <= endDateExclusive) {
     const status = markMap.get(cursor) ?? defaultStatus(cursor);
@@ -48,8 +52,11 @@ export function computeAttendanceStats(
     } else if (status === "absent") {
       workingDays++;
       absentDays++;
+    } else if (status === null) {
+      // a regular day (not a weekend/kerala holiday) with no explicit mark
+      unmarkedDays++;
     }
-    // holiday or null (unmarked) -> doesn't count towards working days
+    // holiday -> doesn't count towards working days or unmarked days
 
     const next = new Date(cursor + "T00:00:00Z");
     next.setUTCDate(next.getUTCDate() + 1);
@@ -85,5 +92,6 @@ export function computeAttendanceStats(
     percentage,
     safeToBunk,
     needToAttend,
+    unmarkedDays,
   };
 }

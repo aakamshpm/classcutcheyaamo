@@ -45,6 +45,7 @@ export function AttendanceCalendar({
   marks: MarkedDay[];
 }) {
   const today = todayISO();
+  const notStartedYet = startDate > today;
   const start = parseISODate(startDate);
   const [year, setYear] = useState(start.getUTCFullYear());
   const [month, setMonth] = useState(start.getUTCMonth());
@@ -93,6 +94,13 @@ export function AttendanceCalendar({
 
   return (
     <div className="card p-5">
+      {notStartedYet && (
+        <p className="mb-4 rounded-lg bg-status-holiday-bg px-3 py-2 text-xs text-muted">
+          this semester starts {startDate} — that date hasn&apos;t arrived
+          yet, so there&apos;s nothing to mark until then.
+        </p>
+      )}
+
       <div className="mb-4 flex items-center justify-between">
         <button
           type="button"
@@ -130,12 +138,16 @@ export function AttendanceCalendar({
           const dayNum = parseISODate(dateISO).getUTCDate();
           const colors = STATUS_COLORS[status ?? "unmarked"];
 
+          let title = holidayName;
+          if (dateISO < startDate) title = "before the semester started";
+          else if (dateISO > maxSelectable) title = "date not reached yet";
+
           return (
             <button
               key={dateISO}
               type="button"
               disabled={outOfRange}
-              title={holidayName}
+              title={title}
               onClick={() => handleDayClick(dateISO)}
               style={
                 outOfRange
