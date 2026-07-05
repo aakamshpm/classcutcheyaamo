@@ -1,8 +1,10 @@
-import { desc, eq, isNull } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { db } from "@/db";
-import { semesters } from "@/db/schema";
+import { attendanceDays, semesters } from "@/db/schema";
+import { computeAttendanceStats } from "@/lib/attendance";
+import { todayISO } from "@/lib/date";
 import { CreateSemesterForm } from "./components/create-semester-form";
 import { EndSemesterForm } from "./components/end-semester-form";
 
@@ -15,6 +17,35 @@ export default async function DashboardPage() {
     .from(semesters)
     .where(eq(semesters.userId, userId))
     .orderBy(desc(semesters.startDate));
+
+  const semesterIds = allSemesters.map((s) => s.id);
+  const allMarks = semesterIds.length
+    ? await db
+        .select({
+          semesterId: attendanceDays.semesterId,
+          date: attendanceDays.date,
+          status: attendanceDays.status,
+        })
+        .from(attendanceDays)
+        .where(inArray(attendanceDays.semesterId, semesterIds))
+    : [];
+
+  const today = todayISO();
+  const percentBySemester = new Map<string, number | null>();
+  for (const s of allSemesters) {
+    if (s.startDate > today) {
+      percentBySemester.set(s.id, null);
+      continue;
+    }
+    const marks = allMarks.filter((m) => m.semesterId === s.id);
+    const stats = computeAttendanceStats(
+      s.startDate,
+      s.endDate ?? today,
+      marks,
+      s.requiredPercentage,
+    );
+    percentBySemester.set(s.id, stats.percentage);
+  }
 
   const activeSemester = allSemesters.find((s) => s.endDate === null);
   const pastSemesters = allSemesters.filter((s) => s.endDate !== null);
@@ -46,7 +77,27 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">
               active semester
             </p>
-            <h2 className="mt-1 text-lg font-bold">{activeSemester.name}</h2>
+            <div className="mt-1 flex items-baseline justify-between">
+              <h2 className="text-lg font-bold">{activeSemester.name}</h2>
+              {(() => {
+                const pct = percentBySemester.get(activeSemester.id);
+                if (pct === null || pct === undefined) return null;
+                const isSafe =
+                  pct >= activeSemester.requiredPercentage / 100;
+                return (
+                  <span
+                    className="text-2xl font-bold"
+                    style={{
+                      color: isSafe
+                        ? "var(--status-present)"
+                        : "var(--status-absent)",
+                    }}
+                  >
+                    {Math.round(pct * 1000) / 10}%
+                  </span>
+                );
+              })()}
+            </div>
             <p className="mt-1 text-sm text-muted">
               started {activeSemester.startDate} · needs{" "}
               {activeSemester.requiredPercentage}%
@@ -86,19 +137,40 @@ export default async function DashboardPage() {
               past semesters
             </p>
             <ul className="flex flex-col gap-2">
-              {pastSemesters.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    href={`/dashboard/sessions/${s.id}`}
-                    className="card flex items-center justify-between px-4 py-3 text-sm transition-colors hover:border-primary"
-                  >
-                    <span className="font-medium">{s.name}</span>
-                    <span className="text-muted">
-                      {s.startDate} → {s.endDate}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {pastSemesters.map((s) => {
+                const pct = percentBySemester.get(s.id);
+                const isSafe =
+                  pct !== null &&
+                  pct !== undefined &&
+                  pct >= s.requiredPercentage / 100;
+                return (
+                  <li key={s.id}>
+                    <Link
+                      href={`/dashboard/sessions/${s.id}`}
+                      className="card flex items-center justify-between px-4 py-3 text-sm transition-colors hover:border-primary"
+                    >
+                      <span className="flex flex-col">
+                        <span className="font-medium">{s.name}</span>
+                        <span className="text-muted">
+                          {s.startDate} → {s.endDate}
+                        </span>
+                      </span>
+                      {pct !== null && pct !== undefined && (
+                        <span
+                          className="text-lg font-bold"
+                          style={{
+                            color: isSafe
+                              ? "var(--status-present)"
+                              : "var(--status-absent)",
+                          }}
+                        >
+                          {Math.round(pct * 1000) / 10}%
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
