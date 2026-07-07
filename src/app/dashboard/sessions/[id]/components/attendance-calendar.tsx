@@ -47,9 +47,21 @@ export function AttendanceCalendar({
 }) {
   const today = todayISO();
   const notStartedYet = startDate > today;
-  const start = parseISODate(startDate);
-  const [year, setYear] = useState(start.getUTCFullYear());
-  const [month, setMonth] = useState(start.getUTCMonth());
+
+  // default to whichever month makes sense to land on: today's month if
+  // today falls within the semester, otherwise the start (semester hasn't
+  // begun yet) or end (semester already over) month
+  const maxSelectableForDefault = endDate && endDate < today ? endDate : today;
+  const defaultDateISO =
+    startDate <= today && today <= maxSelectableForDefault
+      ? today
+      : notStartedYet
+        ? startDate
+        : (endDate ?? startDate);
+  const defaultDate = parseISODate(defaultDateISO);
+
+  const [year, setYear] = useState(defaultDate.getUTCFullYear());
+  const [month, setMonth] = useState(defaultDate.getUTCMonth());
   const [isPending, startTransition] = useTransition();
   const [optimisticMarks, setOptimisticMarks] = useState<
     Map<string, DayStatus>

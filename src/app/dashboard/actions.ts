@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, isNull } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { semesters } from "@/db/schema";
@@ -29,20 +29,6 @@ export async function createSemester(
     requiredPercentage > 100
   ) {
     return { error: "required percentage needs to be between 1 and 100" };
-  }
-
-  const [active] = await db
-    .select({ id: semesters.id })
-    .from(semesters)
-    .where(
-      and(eq(semesters.userId, session.user.id), isNull(semesters.endDate)),
-    )
-    .limit(1);
-
-  if (active) {
-    return {
-      error: "you already have an active semester, end it first",
-    };
   }
 
   await db.insert(semesters).values({
@@ -88,5 +74,6 @@ export async function endSemester(
     .where(eq(semesters.id, semesterId));
 
   revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/sessions/${semesterId}`);
   return { success: true };
 }

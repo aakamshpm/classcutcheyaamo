@@ -47,7 +47,7 @@ export default async function DashboardPage() {
     percentBySemester.set(s.id, stats.percentage);
   }
 
-  const activeSemester = allSemesters.find((s) => s.endDate === null);
+  const activeSemesters = allSemesters.filter((s) => s.endDate === null);
   const pastSemesters = allSemesters.filter((s) => s.endDate !== null);
 
   return (
@@ -72,64 +72,71 @@ export default async function DashboardPage() {
           </form>
         </div>
 
-        {activeSemester ? (
-          <div className="card mb-8 p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-              active semester
-            </p>
-            <div className="mt-1 flex items-baseline justify-between">
-              <h2 className="text-lg font-bold">{activeSemester.name}</h2>
-              {(() => {
-                const pct = percentBySemester.get(activeSemester.id);
-                if (pct === null || pct === undefined) return null;
-                const isSafe =
-                  pct >= activeSemester.requiredPercentage / 100;
-                return (
-                  <span
-                    className="text-2xl font-bold"
-                    style={{
-                      color: isSafe
-                        ? "var(--status-present)"
-                        : "var(--status-absent)",
-                    }}
+        {activeSemesters.length > 0 && (
+          <div className="mb-8 flex flex-col gap-4">
+            {activeSemesters.map((activeSemester) => (
+              <div key={activeSemester.id} className="card p-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                  active semester
+                </p>
+                <div className="mt-1 flex items-baseline justify-between">
+                  <h2 className="text-lg font-bold">
+                    {activeSemester.name}
+                  </h2>
+                  {(() => {
+                    const pct = percentBySemester.get(activeSemester.id);
+                    if (pct === null || pct === undefined) return null;
+                    const isSafe =
+                      pct >= activeSemester.requiredPercentage / 100;
+                    return (
+                      <span
+                        className="text-2xl font-bold"
+                        style={{
+                          color: isSafe
+                            ? "var(--status-present)"
+                            : "var(--status-absent)",
+                        }}
+                      >
+                        {Math.round(pct * 1000) / 10}%
+                      </span>
+                    );
+                  })()}
+                </div>
+                <p className="mt-1 text-sm text-muted">
+                  started {activeSemester.startDate} · needs{" "}
+                  {activeSemester.requiredPercentage}%
+                </p>
+
+                <div className="mt-4">
+                  <Link
+                    href={`/dashboard/sessions/${activeSemester.id}`}
+                    className="btn-primary inline-block px-4 py-2 text-sm"
                   >
-                    {Math.round(pct * 1000) / 10}%
-                  </span>
-                );
-              })()}
-            </div>
-            <p className="mt-1 text-sm text-muted">
-              started {activeSemester.startDate} · needs{" "}
-              {activeSemester.requiredPercentage}%
-            </p>
+                    mark attendance
+                  </Link>
+                </div>
 
-            <div className="mt-4">
-              <Link
-                href={`/dashboard/sessions/${activeSemester.id}`}
-                className="btn-primary inline-block px-4 py-2 text-sm"
-              >
-                mark attendance
-              </Link>
-            </div>
-
-            <details className="mt-4">
-              <summary className="cursor-pointer text-sm text-muted">
-                sem got over? end it here
-              </summary>
-              <div className="mt-3">
-                <EndSemesterForm semesterId={activeSemester.id} />
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-sm text-muted">
+                    sem got over? end it here
+                  </summary>
+                  <div className="mt-3">
+                    <EndSemesterForm semesterId={activeSemester.id} />
+                  </div>
+                </details>
               </div>
-            </details>
-          </div>
-        ) : (
-          <div className="card mb-8 p-6">
-            <p className="mb-4 text-sm text-muted">
-              no active semester right now. start one whenever your sem
-              begins.
-            </p>
-            <CreateSemesterForm />
+            ))}
           </div>
         )}
+
+        <div className="card mb-8 p-6">
+          <p className="mb-4 text-sm text-muted">
+            {activeSemesters.length > 0
+              ? "starting another one? go for it — you can track multiple semesters at once."
+              : "no active semester right now. start one whenever your sem begins."}
+          </p>
+          <CreateSemesterForm />
+        </div>
 
         {pastSemesters.length > 0 && (
           <div>
