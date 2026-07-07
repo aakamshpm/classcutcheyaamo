@@ -129,14 +129,24 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        <div className="card mb-8 p-6">
-          <p className="mb-4 text-sm text-muted">
-            {activeSemesters.length > 0
-              ? "starting another one? go for it — you can track multiple semesters at once."
-              : "no active semester right now. start one whenever your sem begins."}
-          </p>
-          <CreateSemesterForm />
-        </div>
+        {activeSemesters.length > 0 ? (
+          <details className="mb-8">
+            <summary className="cursor-pointer text-sm text-muted underline">
+              add another semester
+            </summary>
+            <div className="card mt-3 p-6">
+              <CreateSemesterForm />
+            </div>
+          </details>
+        ) : (
+          <div className="card mb-8 p-6">
+            <p className="mb-4 text-sm text-muted">
+              no active semester right now. start one whenever your sem
+              begins.
+            </p>
+            <CreateSemesterForm />
+          </div>
+        )}
 
         {pastSemesters.length > 0 && (
           <div>
