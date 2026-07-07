@@ -54,6 +54,37 @@ export async function updateStartDate(
   return { success: true };
 }
 
+export async function updateRequiredPercentage(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "not logged in" };
+
+  const semesterId = String(formData.get("semesterId") ?? "");
+  const requiredPercentage = Number(formData.get("requiredPercentage") ?? 0);
+
+  if (!semesterId) return { error: "missing info" };
+  if (
+    !Number.isInteger(requiredPercentage) ||
+    requiredPercentage < 1 ||
+    requiredPercentage > 100
+  ) {
+    return { error: "required percentage needs to be between 1 and 100" };
+  }
+
+  await assertOwnsSemester(semesterId, session.user.id);
+
+  await db
+    .update(semesters)
+    .set({ requiredPercentage })
+    .where(eq(semesters.id, semesterId));
+
+  revalidatePath(`/dashboard/sessions/${semesterId}`);
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function setDayStatus(
   semesterId: string,
   date: string,

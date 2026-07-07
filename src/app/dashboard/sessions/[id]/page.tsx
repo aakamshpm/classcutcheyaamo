@@ -7,6 +7,7 @@ import { attendanceDays, semesters } from "@/db/schema";
 import { AttendanceCalendar } from "./components/attendance-calendar";
 import { PercentageSummary } from "./components/percentage-summary";
 import { EditStartDateForm } from "./components/edit-start-date-form";
+import { EditRequiredPercentageForm } from "./components/edit-required-percentage-form";
 import { EndSemesterForm } from "@/app/dashboard/components/end-semester-form";
 
 export default async function SessionPage({
@@ -44,10 +45,17 @@ export default async function SessionPage({
           {semester.startDate}{" "}
           {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"}
         </p>
+        <p className="mt-1 text-sm text-muted">
+          needs {semester.requiredPercentage}%
+        </p>
         <div className="mt-1 flex flex-wrap items-center gap-3">
           <EditStartDateForm
             semesterId={semester.id}
             currentStartDate={semester.startDate}
+          />
+          <EditRequiredPercentageForm
+            semesterId={semester.id}
+            currentRequiredPercentage={semester.requiredPercentage}
           />
           {!semester.endDate && (
             <details className="text-sm text-muted">
