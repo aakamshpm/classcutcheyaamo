@@ -1,0 +1,57 @@
+name: build android apk
+
+# builds an installable Android APK on github's free runners.
+# trigger it manually from the Actions tab (workflow_dispatch); the APK
+# shows up as a downloadable artifact on the run when it finishes.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: setup android sdk
+        uses: android-actions/setup-android@v3
+
+      - name: install deps
+        run: npm ci
+
+      # turns the expo project into a native android/ project using the
+      # config in app.json (package id, icons, plugins, etc.)
+      - name: expo prebuild (android)
+        run: npx expo prebuild --platform android --no-install
+
+      # debug variant is auto-signed with a debug keystore, so it installs
+      # on any phone without us having to manage a release signing key.
+      # perfect for sharing with friends. (a play-store release APK/AAB
+      # would need a keystore in secrets — a later step if you ever publish.)
+      - name: build debug apk
+        run: ./gradlew assembleDebug
+        working-directory: mobile/android
+
+      - name: upload apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: classcutcheyaamo-apk
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
