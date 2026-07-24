@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateStartDate, type ActionResult } from "../actions";
 
 export function EditStartDateForm({
@@ -15,6 +15,11 @@ export function EditStartDateForm({
     ActionResult | null,
     FormData
   >(updateStartDate, null);
+
+  // collapse back once the save actually succeeds
+  useEffect(() => {
+    if (state && "success" in state) setOpen(false);
+  }, [state]);
 
   if (!open) {
     return (

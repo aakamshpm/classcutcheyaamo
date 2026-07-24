@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateRequiredPercentage, type ActionResult } from "../actions";
 
 export function EditRequiredPercentageForm({
@@ -15,6 +15,11 @@ export function EditRequiredPercentageForm({
     ActionResult | null,
     FormData
   >(updateRequiredPercentage, null);
+
+  // collapse back once the save actually succeeds
+  useEffect(() => {
+    if (state && "success" in state) setOpen(false);
+  }, [state]);
 
   if (!open) {
     return (
