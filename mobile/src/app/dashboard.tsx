@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
+import { ReminderCard } from "@/components/reminder-card";
 import { SemesterCard } from "@/components/semester-card";
 import { ThemedText } from "@/components/themed-text";
 import { Spacing } from "@/constants/theme";
@@ -144,6 +145,8 @@ export default function DashboardScreen() {
               onPress={() => router.push("/new-semester")}
               style={styles.newButton}
             />
+
+            <ReminderCard />
           </>
         )}
       </ScrollView>
