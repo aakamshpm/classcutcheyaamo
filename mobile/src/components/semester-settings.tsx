@@ -1,23 +1,21 @@
 import { useState } from "react";
 import {
   Alert,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 
 import { Button } from "@/components/button";
+import { DateField } from "@/components/date-field";
 import { Input } from "@/components/input";
 import { ThemedText } from "@/components/themed-text";
 import { Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { todayISO } from "@/lib/date";
 import { ApiError } from "@/lib/api";
-
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 type OpenSheet = null | "start" | "required" | "end";
 
@@ -45,9 +43,7 @@ export function SemesterSettings({
 
   return (
     <View style={styles.wrap}>
-      <View
-        style={{ height: 1, backgroundColor: theme.cardBorder }}
-      />
+      <View style={{ height: 1, backgroundColor: theme.cardBorder }} />
       <View style={styles.links}>
         <SettingLink label="edit start date" onPress={() => setOpen("start")} />
         <SettingLink
@@ -59,15 +55,14 @@ export function SemesterSettings({
         )}
       </View>
 
-      <BottomSheet visible={open === "start"} title="edit start date" onClose={close}>
-        <EditField
+      <BottomSheet
+        visible={open === "start"}
+        title="edit start date"
+        onClose={close}
+      >
+        <DateEditor
           initial={startDate}
-          placeholder="2026-06-01"
-          keyboardType="numbers-and-punctuation"
-          validate={(v) =>
-            DATE_RE.test(v) ? null : "date must look like 2026-06-01"
-          }
-          onSave={async (v) => onEditStart(v)}
+          onSave={onEditStart}
           onDone={close}
         />
       </BottomSheet>
@@ -77,34 +72,20 @@ export function SemesterSettings({
         title="edit required %"
         onClose={close}
       >
-        <EditField
-          initial={String(requiredPercentage)}
-          placeholder="75"
-          keyboardType="number-pad"
-          validate={(v) => {
-            const n = Number(v);
-            return Number.isInteger(n) && n >= 1 && n <= 100
-              ? null
-              : "must be a whole number 1–100";
-          }}
-          onSave={async (v) => onEditRequired(Number(v))}
+        <PercentEditor
+          initial={requiredPercentage}
+          onSave={onEditRequired}
           onDone={close}
         />
       </BottomSheet>
 
       <BottomSheet visible={open === "end"} title="end semester" onClose={close}>
-        <EditField
+        <DateEditor
           initial={todayISO()}
-          placeholder="2026-10-31"
-          keyboardType="numbers-and-punctuation"
+          minimumDate={startDate}
           saveLabel="end semester"
           destructive
-          validate={(v) => {
-            if (!DATE_RE.test(v)) return "date must look like 2026-10-31";
-            if (v < startDate) return "end date can't be before the start";
-            return null;
-          }}
-          onSave={async (v) => onEnd(v)}
+          onSave={onEnd}
           onDone={close}
         />
       </BottomSheet>
@@ -144,48 +125,50 @@ function BottomSheet({
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      {/* tap the dimmed backdrop to dismiss */}
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.sheetAnchor}
-        pointerEvents="box-none"
+      {/* the ScrollView wrapper isn't for scrolling — it's the only thing
+          that carries keyboardShouldPersistTaps, which lets the save button
+          receive the FIRST tap while the keyboard is still up (otherwise
+          android spends that tap dismissing the keyboard). no
+          KeyboardAvoidingView here, so the centered dialog doesn't shift. */}
+      <ScrollView
+        style={styles.centerAnchor}
+        contentContainerStyle={styles.centerContent}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        showsVerticalScrollIndicator={false}
       >
         <View
           style={[
-            styles.sheet,
+            styles.dialog,
             { backgroundColor: theme.card, borderColor: theme.cardBorder },
           ]}
         >
-          <View style={[styles.grabber, { backgroundColor: theme.cardBorder }]} />
           <ThemedText type="subtitle" style={styles.sheetTitle}>
             {title}
           </ThemedText>
           {children}
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </Modal>
   );
 }
 
-function EditField({
+// date editor: uses the native date picker, no keyboard, no double-tap
+function DateEditor({
   initial,
-  placeholder,
-  keyboardType,
-  validate,
+  minimumDate,
   onSave,
   onDone,
   saveLabel = "save",
   destructive = false,
 }: {
   initial: string;
-  placeholder: string;
-  keyboardType?: "number-pad" | "numbers-and-punctuation";
-  validate: (v: string) => string | null;
+  minimumDate?: string;
   onSave: (v: string) => Promise<void>;
   onDone: () => void;
   saveLabel?: string;
@@ -196,12 +179,10 @@ function EditField({
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    const problem = validate(value.trim());
-    if (problem) return setError(problem);
     setError(null);
     setSaving(true);
     try {
-      await onSave(value.trim());
+      await onSave(value);
       onDone();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "couldn't save, try again");
@@ -212,14 +193,7 @@ function EditField({
 
   return (
     <View style={styles.editBox}>
-      <Input
-        value={value}
-        onChangeText={setValue}
-        placeholder={placeholder}
-        keyboardType={keyboardType}
-        autoCapitalize="none"
-        autoFocus
-      />
+      <DateField value={value} onChange={setValue} minimumDate={minimumDate} />
       {error && (
         <ThemedText type="small" color="statusAbsent">
           {error}
@@ -235,6 +209,69 @@ function EditField({
         <Button
           title={saveLabel}
           onPress={destructive ? () => confirmEnd(save) : save}
+          loading={saving}
+          style={styles.flexBtn}
+        />
+      </View>
+    </View>
+  );
+}
+
+// numeric editor for required %
+function PercentEditor({
+  initial,
+  onSave,
+  onDone,
+}: {
+  initial: number;
+  onSave: (v: number) => Promise<void>;
+  onDone: () => void;
+}) {
+  const [value, setValue] = useState(String(initial));
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const n = Number(value.trim());
+    if (!Number.isInteger(n) || n < 1 || n > 100) {
+      return setError("must be a whole number 1–100");
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      await onSave(n);
+      onDone();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "couldn't save, try again");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <View style={styles.editBox}>
+      <Input
+        value={value}
+        onChangeText={setValue}
+        placeholder="75"
+        keyboardType="number-pad"
+        autoFocus
+      />
+      {error && (
+        <ThemedText type="small" color="statusAbsent">
+          {error}
+        </ThemedText>
+      )}
+      <View style={styles.editButtons}>
+        <Button
+          title="cancel"
+          variant="secondary"
+          onPress={onDone}
+          style={styles.flexBtn}
+        />
+        <Button
+          title="save"
+          onPress={save}
           loading={saving}
           style={styles.flexBtn}
         />
@@ -267,26 +304,19 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",
   },
-  sheetAnchor: {
+  centerAnchor: {
     flex: 1,
-    justifyContent: "flex-end",
   },
-  sheet: {
-    borderTopLeftRadius: Radius * 1.4,
-    borderTopRightRadius: Radius * 1.4,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
+  centerContent: {
+    flexGrow: 1,
+    justifyContent: "center",
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    gap: Spacing.md,
   },
-  grabber: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: Spacing.xs,
+  dialog: {
+    borderRadius: Radius * 1.2,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
   sheetTitle: { marginBottom: Spacing.xs },
   editBox: { gap: Spacing.sm },

@@ -10,19 +10,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
+import { DateField } from "@/components/date-field";
 import { Input } from "@/components/input";
 import { ThemedText } from "@/components/themed-text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
+import { todayISO } from "@/lib/date";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-
-// today's date as YYYY-MM-DD, prefilled as a sensible default start
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function NewSemesterScreen() {
   const theme = useTheme();
@@ -41,8 +36,6 @@ export default function NewSemesterScreen() {
 
     const pct = Number(requiredPercentage);
     if (name.trim().length < 1) return setError("give the semester a name");
-    if (!DATE_RE.test(startDate))
-      return setError("start date must look like 2026-06-01");
     if (!Number.isInteger(pct) || pct < 1 || pct > 100)
       return setError("required % must be a whole number between 1 and 100");
 
@@ -91,13 +84,7 @@ export default function NewSemesterScreen() {
             <ThemedText type="small" color="muted">
               start date
             </ThemedText>
-            <Input
-              placeholder="2026-06-01"
-              value={startDate}
-              onChangeText={setStartDate}
-              autoCapitalize="none"
-              keyboardType="numbers-and-punctuation"
-            />
+            <DateField value={startDate} onChange={setStartDate} />
           </View>
 
           <View style={styles.field}>
