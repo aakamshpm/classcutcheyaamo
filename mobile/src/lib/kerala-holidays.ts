@@ -1,0 +1,67 @@
+// kerala-specific holiday list for 2026 and 2027, sourced primarily from
+// officeholidays.com's kerala regional list (cross-checked against
+// timeanddate.com for national holidays). movable festival dates (onam,
+// vishu-adjacent islamic holidays, eid, etc.) depend on moon sighting and
+// are officially "tentative" even on government sources — they can shift
+// by a day. users can always add/edit/remove any day manually on the
+// calendar, so treat this as a helpful starting point, not gospel.
+export const KERALA_HOLIDAYS: { date: string; name: string }[] = [
+  { date: "2026-01-02", name: "Mannam Jayanthi" },
+  { date: "2026-01-26", name: "Republic Day" },
+  { date: "2026-02-15", name: "Maha Shivaratri" },
+  { date: "2026-03-20", name: "Ramzan / Id-ul-Fitr" },
+  { date: "2026-04-02", name: "Pesaha Vyazham (Maundy Thursday)" },
+  { date: "2026-04-03", name: "Dukha Velli (Good Friday)" },
+  { date: "2026-04-05", name: "Easter Sunday" },
+  { date: "2026-04-14", name: "Ambedkar Jayanti" },
+  { date: "2026-04-15", name: "Vishu" },
+  { date: "2026-05-01", name: "May Day" },
+  { date: "2026-05-27", name: "Bakrid / Id-ul-Adha" },
+  { date: "2026-05-28", name: "Bakrid holiday" },
+  { date: "2026-06-26", name: "Muharram / Ashura" },
+  { date: "2026-08-12", name: "Karkidaka Vavu" },
+  { date: "2026-08-15", name: "Independence Day" },
+  { date: "2026-08-25", name: "Milad-i-Sherif" },
+  { date: "2026-08-25", name: "First Onam" },
+  { date: "2026-08-26", name: "Thiruvonam" },
+  { date: "2026-08-27", name: "Third Onam" },
+  { date: "2026-08-28", name: "Fourth Onam" },
+  { date: "2026-08-28", name: "Ayyankali Jayanthi" },
+  { date: "2026-08-28", name: "Sree Narayana Guru Jayanti" },
+  { date: "2026-09-04", name: "Janmashtami" },
+  { date: "2026-09-21", name: "Sree Narayana Guru Samadhi" },
+  { date: "2026-10-02", name: "Gandhi Jayanti" },
+  { date: "2026-10-20", name: "Mahanavami" },
+  { date: "2026-10-21", name: "Vijayadashami" },
+  { date: "2026-12-25", name: "Christmas" },
+
+  { date: "2027-01-02", name: "Mannam Jayanthi" },
+  { date: "2027-01-26", name: "Republic Day" },
+  { date: "2027-03-06", name: "Maha Shivaratri" },
+  { date: "2027-03-09", name: "Ramzan / Id-ul-Fitr" },
+  { date: "2027-03-25", name: "Pesaha Vyazham (Maundy Thursday)" },
+  { date: "2027-03-26", name: "Dukha Velli (Good Friday)" },
+  { date: "2027-03-28", name: "Easter Sunday" },
+  { date: "2027-04-14", name: "Ambedkar Jayanti" },
+  { date: "2027-04-15", name: "Vishu" },
+  { date: "2027-05-01", name: "May Day" },
+  { date: "2027-05-17", name: "Bakrid / Id-ul-Adha" },
+  { date: "2027-06-16", name: "Muharram / Ashura" },
+  { date: "2027-08-15", name: "Independence Day" },
+  { date: "2027-08-15", name: "Milad-i-Sherif" },
+  { date: "2027-08-25", name: "Janmashtami" },
+  { date: "2027-08-28", name: "Ayyankali Jayanthi" },
+  { date: "2027-09-11", name: "First Onam" },
+  { date: "2027-09-12", name: "Thiruvonam" },
+  { date: "2027-09-13", name: "Third Onam" },
+  { date: "2027-09-14", name: "Fourth Onam" },
+  { date: "2027-09-21", name: "Sree Narayana Guru Samadhi" },
+  { date: "2027-10-02", name: "Gandhi Jayanti" },
+  { date: "2027-10-08", name: "Mahanavami" },
+  { date: "2027-10-09", name: "Vijayadashami" },
+  { date: "2027-12-25", name: "Christmas" },
+];
+
+export const KERALA_HOLIDAY_MAP: Map<string, string> = new Map(
+  KERALA_HOLIDAYS.map((h) => [h.date, h.name]),
+);
