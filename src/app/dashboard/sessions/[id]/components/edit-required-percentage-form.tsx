@@ -36,9 +36,14 @@ export function EditRequiredPercentageForm({
   return (
     <form action={formAction} className="mt-2 flex flex-col gap-2">
       <input type="hidden" name="semesterId" value={semesterId} />
+      {/* inputMode numeric brings up the digits-only keypad on phones instead
+          of the full qwerty keyboard. pattern is the ios fallback, since older
+          safari ignores inputMode on type=number */}
       <input
         name="requiredPercentage"
         type="number"
+        inputMode="numeric"
+        pattern="[0-9]*"
         min={1}
         max={100}
         required

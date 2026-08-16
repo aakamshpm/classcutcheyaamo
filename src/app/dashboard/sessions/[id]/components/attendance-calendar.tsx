@@ -23,6 +23,22 @@ function defaultStatus(dateISO: string): DayStatus | null {
   return null; // regular day, unmarked until the user says otherwise
 }
 
+// where a holiday came from. kerala holidays are seeded from the static list
+// and have no db row of their own, so any explicit "holiday" mark on a date
+// that isn't in that list must be one the user added themselves. derived
+// rather than stored — no extra column needed.
+type HolidaySource = "kerala" | "custom";
+
+function holidaySource(
+  dateISO: string,
+  explicitStatus: DayStatus | undefined,
+): HolidaySource {
+  if (explicitStatus === "holiday" && !KERALA_HOLIDAY_MAP.has(dateISO)) {
+    return "custom";
+  }
+  return "kerala";
+}
+
 // tailwind can't see these css vars at build time for arbitrary values in
 // some setups, so status colors are applied via inline style instead of
 // utility classes to guarantee they always match the design tokens
@@ -87,14 +103,18 @@ export function AttendanceCalendar({
     if (isWeekendDay(dateISO)) return; // weekends are always off, not markable
 
     const current = optimisticMarks.get(dateISO) ?? defaultStatus(dateISO);
-    // cycle: unmarked -> present -> half day -> absent -> holiday -> unmarked
-    const cycle: (DayStatus | null)[] = [
-      "present",
-      "half_day",
-      "absent",
-      "holiday",
-      null,
-    ];
+
+    // on a kerala-seed holiday the "holiday" state IS the cleared state (it's
+    // derived from the static list, not stored), so including both "holiday"
+    // and null in the cycle made the tap a silent no-op — it deleted a row
+    // that never existed and the default re-derived straight back to holiday.
+    // dropping "holiday" from the cycle lets you actually override the seed
+    // list, with null cycling you back to the default holiday.
+    const isSeedHoliday = defaultStatus(dateISO) === "holiday";
+    const cycle: (DayStatus | null)[] = isSeedHoliday
+      ? ["present", "half_day", "absent", null]
+      : ["present", "half_day", "absent", "holiday", null];
+
     const currentIndex = cycle.indexOf(current);
     const next = cycle[(currentIndex + 1) % cycle.length];
 
@@ -157,28 +177,44 @@ export function AttendanceCalendar({
           if (!dateISO) return <div key={i} />;
 
           const weekend = isWeekendDay(dateISO);
-          const outOfRange =
-            dateISO < startDate || dateISO > maxSelectable || weekend;
+          // a weekend inside the semester is a known holiday, not an unknown
+          // future day — keep those two visually distinct. only dates outside
+          // the semester window get the washed-out "nothing to see" treatment.
+          const outsideWindow =
+            dateISO < startDate || dateISO > maxSelectable;
+          const notMarkable = outsideWindow || weekend;
           const explicitStatus = optimisticMarks.get(dateISO);
           const status = explicitStatus ?? defaultStatus(dateISO);
           const holidayName = KERALA_HOLIDAY_MAP.get(dateISO);
           const dayNum = parseISODate(dateISO).getUTCDate();
           const colors = STATUS_COLORS[status ?? "unmarked"];
+          // only mark the dot on holidays you added yourself, so it's obvious
+          // which ones are yours to remove vs which came from the seed list
+          const isCustomHoliday =
+            status === "holiday" &&
+            !weekend &&
+            holidaySource(dateISO, explicitStatus) === "custom";
 
           let title = holidayName;
           if (dateISO < startDate) title = "before the semester started";
           else if (dateISO > maxSelectable) title = "date not reached yet";
           else if (weekend) title = "weekend";
+          else if (isCustomHoliday) title = "holiday you added — tap to remove";
+          else if (holidayName && status === "holiday") {
+            title = `${holidayName} (kerala calendar) — tap to override`;
+          } else if (holidayName) {
+            title = `${holidayName} (kerala calendar, overridden)`;
+          }
 
           return (
             <button
               key={dateISO}
               type="button"
-              disabled={outOfRange}
+              disabled={notMarkable}
               title={title}
               onClick={() => handleDayClick(dateISO)}
               style={
-                outOfRange
+                outsideWindow
                   ? undefined
                   : {
                       background: colors.bg,
@@ -189,10 +225,12 @@ export function AttendanceCalendar({
                           : "none",
                     }
               }
-              className={`aspect-square rounded-lg text-sm font-medium transition-transform ${
-                outOfRange
+              className={`relative aspect-square rounded-lg text-sm font-medium transition-transform ${
+                outsideWindow
                   ? "cursor-default text-card-border"
-                  : "hover:scale-105"
+                  : notMarkable
+                    ? "cursor-default"
+                    : "hover:scale-105"
               } ${
                 dateISO === today
                   ? "ring-2 ring-offset-2 ring-offset-card ring-primary"
@@ -200,6 +238,13 @@ export function AttendanceCalendar({
               }`}
             >
               {dayNum}
+              {isCustomHoliday && (
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
+                  style={{ background: "var(--status-holiday)" }}
+                />
+              )}
             </button>
           );
         })}
@@ -209,8 +254,20 @@ export function AttendanceCalendar({
         <LegendDot color="var(--status-present)" label="present" />
         <LegendDot color="var(--status-half)" label="half day" />
         <LegendDot color="var(--status-absent)" label="absent" />
-        <LegendDot color="var(--status-holiday)" label="holiday" />
+        <LegendDot color="var(--status-holiday)" label="holiday / weekend" />
         <LegendDot color="var(--card-border)" label="unmarked" />
+        <span className="flex items-center gap-1.5">
+          <span
+            className="relative h-3 w-3 rounded-sm"
+            style={{ background: "var(--status-holiday-bg)" }}
+          >
+            <span
+              className="absolute bottom-0 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
+              style={{ background: "var(--status-holiday)" }}
+            />
+          </span>
+          holiday you added
+        </span>
       </div>
 
       {isPending && <p className="mt-2 text-xs text-muted">saving...</p>}

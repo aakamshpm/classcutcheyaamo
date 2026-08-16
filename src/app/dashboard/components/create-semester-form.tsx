@@ -40,6 +40,8 @@ export function CreateSemesterForm() {
           id="requiredPercentage"
           name="requiredPercentage"
           type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
           min={1}
           max={100}
           required
