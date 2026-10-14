@@ -1,31 +1,32 @@
 @import "tailwindcss";
 
+/* theme tokens: cream canvas, white cards with parchment borders, evergreen
+   for actions, gold only as a hairline. flat, depth comes from borders and tints */
 :root {
-  /* warm neutral base instead of flat zinc, so the whole app feels less
-     sterile/corporate and more like a friendly little tool */
-  --background: #fdfcfb;
-  --foreground: #2b2724;
+  --background: #fbf7ee;
+  --foreground: #1c2420;
 
   --card: #ffffff;
-  --card-border: #ece7e1;
-  --muted: #8a8177;
+  --card-border: #eae3d2;
+  /* kept dark enough for small helper text (lighter greys are ~3:1 on the cream) */
+  --muted: #6b746e;
 
-  /* deep teal as the primary accent instead of generic black/emerald,
-     gives the brand a bit more personality */
-  --primary: #0f6e6e;
+  --primary: #1f6b4a;
   --primary-foreground: #ffffff;
+  --gold: #b8912f;
 
-  /* softer, more pastel status colors than tailwind's saturated defaults */
-  --status-present: #2f9e6e;
-  --status-present-bg: #e6f5ee;
-  --status-absent: #d9534f;
-  --status-absent-bg: #fbebea;
-  --status-holiday: #a9a2ea;
-  --status-holiday-bg: #edebfb;
-  --status-half: #d99a3d;
-  --status-half-bg: #faf0e0;
+  /* present = safe, absent = danger, half = edge, holiday = neutral */
+  --status-present: #2e8b57;
+  --status-present-bg: #e8f5e9;
+  --status-absent: #d14b3f;
+  --status-absent-bg: #fdeceb;
+  --status-half: #d9962b;
+  --status-half-bg: #faf5e8;
+  --status-holiday: #8c948f;
+  --status-holiday-bg: #f0efea;
 
-  --radius: 0.9rem;
+  --radius: 1rem; /* cards */
+  --radius-control: 0.75rem; /* buttons and inputs */
 }
 
 @theme inline {
@@ -36,6 +37,7 @@
   --color-muted: var(--muted);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-gold: var(--gold);
   --color-status-present: var(--status-present);
   --color-status-present-bg: var(--status-present-bg);
   --color-status-absent: var(--status-absent);
@@ -44,30 +46,30 @@
   --color-status-holiday-bg: var(--status-holiday-bg);
   --color-status-half: var(--status-half);
   --color-status-half-bg: var(--status-half-bg);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #171310;
-    --foreground: #f2eee8;
+    --background: #121714;
+    --foreground: #eef2ee;
 
-    --card: #211c18;
-    --card-border: #35302a;
-    --muted: #a89d8f;
+    --card: #1a211d;
+    --card-border: #2b342f;
+    --muted: #9aa59d;
 
-    --primary: #3dbdb0;
-    --primary-foreground: #10201d;
+    --primary: #5fc08f;
+    --primary-foreground: #0b1f15;
+    --gold: #d3ad4f;
 
-    --status-present: #4ade90;
-    --status-present-bg: #16302a;
-    --status-absent: #f28b87;
-    --status-absent-bg: #362221;
-    --status-holiday: #c3baf5;
-    --status-holiday-bg: #2a2740;
-    --status-half: #e0ab5f;
-    --status-half-bg: #362a1a;
+    --status-present: #5cc98f;
+    --status-present-bg: #16301f;
+    --status-absent: #ef7d72;
+    --status-absent-bg: #3a201e;
+    --status-half: #e6b04f;
+    --status-half-bg: #33291a;
+    --status-holiday: #9aa59d;
+    --status-holiday-bg: #232a26;
   }
 }
 
@@ -86,50 +88,103 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* small reusable pieces so pages don't have to repeat long class strings */
-.btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: var(--radius);
-  font-weight: 500;
-  transition: opacity 0.15s ease;
-}
-.btn-primary:hover {
-  opacity: 0.9;
-}
-.btn-primary:disabled {
-  opacity: 0.5;
+/* small reusable pieces so pages don't have to repeat long class strings.
+   in the components layer so a utility on the element (min-h-0, px-3...)
+   still wins over them */
+@layer components {
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem; /* 48px touch target */
+    border-radius: var(--radius-control);
+    font-weight: 600;
+    transition:
+      opacity 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+  }
+
+  .btn-secondary {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    color: var(--primary);
+  }
+  .btn-secondary:hover {
+    background: var(--status-holiday-bg);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+  }
+
+  .input {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-control);
+    min-height: 3rem;
+    padding: 0.6rem 0.85rem;
+    color: var(--foreground);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .input::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+  }
+  .input:focus {
+    border-color: var(--primary);
+  }
+
+  /* small status pills, pick a tone with a modifier */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--status-holiday-bg);
+    color: var(--status-holiday);
+  }
+  .chip-safe {
+    background: var(--status-present-bg);
+    color: var(--status-present);
+  }
+  .chip-edge {
+    background: var(--status-half-bg);
+    color: var(--status-half);
+  }
+  .chip-danger {
+    background: var(--status-absent-bg);
+    color: var(--status-absent);
+  }
+
+  /* the one place gold shows up: a hairline under key numbers/sections */
+  .gold-rule {
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.6;
+  }
 }
 
-.btn-secondary {
-  background: transparent;
-  border: 1px solid var(--card-border);
-  color: var(--foreground);
-  border-radius: var(--radius);
-  font-weight: 500;
-  transition: background 0.15s ease;
-}
-.btn-secondary:hover {
-  background: var(--card-border);
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-}
-
-.input {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: calc(var(--radius) * 0.7);
-  padding: 0.6rem 0.85rem;
-  color: var(--foreground);
-  outline: none;
-  transition: border-color 0.15s ease;
-}
-.input:focus {
-  border-color: var(--primary);
+/* percentages and counts shouldn't jitter when a mark flips */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }
 
 /* offline is read-only: the offline banner sets data-offline on <html> and

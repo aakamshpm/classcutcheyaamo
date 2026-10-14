@@ -4,9 +4,9 @@ import { ImageResponse } from "next/og";
 // manifest icons), so they can never drift apart. it's an attendance ring
 // filled to 75% with a check inside — the whole app in one glyph. colours
 // are kept up here so the redesign only has to touch these.
-const BG = "#0f6e6e";
-const RING = "#fdfcfb";
-const CHECK = "#f2c14e";
+const BG = "#1f6b4a";
+const RING = "#fbf7ee";
+const CHECK = "#e0b84a";
 
 type IconOptions = {
   // maskable icons get cropped to a circle/squircle by the os, so the

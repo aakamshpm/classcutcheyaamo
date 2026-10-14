@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en",
     categories: ["education", "productivity"],
     // single values only in a manifest, so these follow the light theme
-    background_color: "#fdfcfb",
-    theme_color: "#fdfcfb",
+    background_color: "#fbf7ee",
+    theme_color: "#fbf7ee",
     icons: [
       {
         src: "/pwa-icons/icon-192.png",
