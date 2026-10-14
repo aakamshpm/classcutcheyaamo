@@ -7,6 +7,7 @@ import { computeAttendanceStats } from "@/lib/attendance";
 import { todayISO } from "@/lib/date";
 import { CreateSemesterForm } from "./components/create-semester-form";
 import { EndSemesterForm } from "./components/end-semester-form";
+import { LogoutForm } from "./components/logout-form";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -57,19 +58,12 @@ export default async function DashboardPage() {
           <h1 className="text-xl font-bold tracking-tight">
             hey, {session?.user?.name}
           </h1>
-          <form
+          <LogoutForm
             action={async () => {
               "use server";
               await signOut({ redirectTo: "/login" });
             }}
-          >
-            <button
-              type="submit"
-              className="text-sm font-medium text-muted underline"
-            >
-              log out
-            </button>
-          </form>
+          />
         </div>
 
         {activeSemesters.length > 0 && (

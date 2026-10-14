@@ -131,3 +131,10 @@ button:disabled {
 .input:focus {
   border-color: var(--primary);
 }
+
+/* offline is read-only: the offline banner sets data-offline on <html> and
+   blocks form submits itself, this just makes the buttons look it */
+html[data-offline] button[type="submit"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -9,6 +9,7 @@ import {
   todayISO,
 } from "@/lib/date";
 import { KERALA_HOLIDAY_MAP } from "@/lib/kerala-holidays";
+import { useOnlineStatus } from "@/lib/use-online-status";
 import { clearDayStatus, setDayStatus, type DayStatus } from "../actions";
 
 type MarkedDay = { date: string; status: DayStatus };
@@ -61,6 +62,7 @@ export function AttendanceCalendar({
   endDate: string | null;
   marks: MarkedDay[];
 }) {
+  const online = useOnlineStatus();
   const today = todayISO();
   const notStartedYet = startDate > today;
 
@@ -98,6 +100,7 @@ export function AttendanceCalendar({
   }
 
   function handleDayClick(dateISO: string) {
+    if (!online) return; // offline is read-only, the save would just fail
     if (dateISO < startDate) return;
     if (dateISO > maxSelectable) return;
     if (isWeekendDay(dateISO)) return; // weekends are always off, not markable
@@ -271,6 +274,11 @@ export function AttendanceCalendar({
       </div>
 
       {isPending && <p className="mt-2 text-xs text-muted">saving...</p>}
+      {!online && (
+        <p className="mt-2 text-xs text-muted">
+          offline, so days can&apos;t be marked right now
+        </p>
+      )}
       <p className="mt-3 text-xs text-muted">
         tap a day to cycle through present → half day → absent → holiday →
         unmarked
