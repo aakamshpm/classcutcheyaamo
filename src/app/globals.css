@@ -149,6 +149,37 @@ button:disabled {
     border-color: var(--primary);
   }
 
+  .input[aria-invalid="true"] {
+    border-color: var(--status-absent);
+  }
+
+  /* inline message box for form errors and heads-ups, pick a tone */
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    border-radius: var(--radius-control);
+    padding: 0.7rem 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    background: var(--status-holiday-bg);
+    color: var(--foreground);
+  }
+  .notice > svg {
+    flex: none;
+    margin-top: 0.05rem;
+  }
+  .notice-danger {
+    background: var(--status-absent-bg);
+    color: var(--status-absent);
+  }
+  .notice-warn {
+    background: var(--status-half-bg);
+  }
+  .notice-warn > svg {
+    color: var(--status-half);
+  }
+
   /* small status pills, pick a tone with a modifier */
   .chip {
     display: inline-flex;
