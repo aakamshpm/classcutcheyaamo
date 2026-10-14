@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
+import { OfflineBanner } from "./components/offline-banner";
+import { ServiceWorkerRegister } from "./components/service-worker-register";
 import { TopLoadingBar } from "./components/top-loading-bar";
 
 const geistSans = Geist({
@@ -17,6 +19,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "classcutcheyaamo?",
   description: "Attendance percentage tracker",
+  applicationName: "classcutcheyaamo?",
+  // ios ignores the manifest for most of this, so it needs its own tags
+  appleWebApp: { capable: true, title: "classcut?", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
+};
+
+// colours match the --background tokens in globals.css so the browser chrome
+// blends in with the page in both light and dark
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fdfcfb" },
+    { media: "(prefers-color-scheme: dark)", color: "#171310" },
+  ],
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -33,7 +49,9 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <TopLoadingBar />
         </Suspense>
+        <OfflineBanner />
         {children}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
