@@ -1,13 +1,16 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { LogoMark } from "@/app/components/logo-mark";
 import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
 import { computeAttendanceStats } from "@/lib/attendance";
 import { todayISO } from "@/lib/date";
+import { toneFor, toPercent, TONE_COLOR } from "@/lib/semester-status";
 import { CreateSemesterForm } from "./components/create-semester-form";
-import { EndSemesterForm } from "./components/end-semester-form";
 import { LogoutForm } from "./components/logout-form";
+import { SemesterOverview } from "./components/semester-overview";
+import { SemesterSwitcher } from "./components/semester-switcher";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -32,160 +35,112 @@ export default async function DashboardPage() {
     : [];
 
   const today = todayISO();
-  const percentBySemester = new Map<string, number | null>();
-  for (const s of allSemesters) {
-    if (s.startDate > today) {
-      percentBySemester.set(s.id, null);
-      continue;
-    }
-    const marks = allMarks.filter((m) => m.semesterId === s.id);
-    const stats = computeAttendanceStats(
-      s.startDate,
-      s.endDate ?? today,
-      marks,
-      s.requiredPercentage,
-    );
-    percentBySemester.set(s.id, stats.percentage);
-  }
-
   const activeSemesters = allSemesters.filter((s) => s.endDate === null);
   const pastSemesters = allSemesters.filter((s) => s.endDate !== null);
+  const marksFor = (id: string) =>
+    allMarks.filter((m) => m.semesterId === id);
 
   return (
-    <main className="flex flex-1 flex-col items-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight">
-            hey, {session?.user?.name}
-          </h1>
-          <LogoutForm
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          />
-        </div>
-
-        {activeSemesters.length > 0 && (
-          <div className="mb-8 flex flex-col gap-4">
-            {activeSemesters.map((activeSemester) => (
-              <div key={activeSemester.id} className="card p-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                  active semester
-                </p>
-                <div className="mt-1 flex items-baseline justify-between">
-                  <h2 className="text-lg font-bold">
-                    {activeSemester.name}
-                  </h2>
-                  {(() => {
-                    const pct = percentBySemester.get(activeSemester.id);
-                    if (pct === null || pct === undefined) return null;
-                    const isSafe =
-                      pct >= activeSemester.requiredPercentage / 100;
-                    return (
-                      <span
-                        className="text-2xl font-bold"
-                        style={{
-                          color: isSafe
-                            ? "var(--status-present)"
-                            : "var(--status-absent)",
-                        }}
-                      >
-                        {Math.round(pct * 1000) / 10}%
-                      </span>
-                    );
-                  })()}
-                </div>
-                <p className="mt-1 text-sm text-muted">
-                  started {activeSemester.startDate} · needs{" "}
-                  {activeSemester.requiredPercentage}%
-                </p>
-
-                <div className="mt-4">
-                  <Link
-                    href={`/dashboard/sessions/${activeSemester.id}`}
-                    className="btn-primary inline-block px-4 py-2 text-sm"
-                  >
-                    mark attendance
-                  </Link>
-                </div>
-
-                <details className="mt-4">
-                  <summary className="cursor-pointer text-sm text-muted">
-                    sem got over? end it here
-                  </summary>
-                  <div className="mt-3">
-                    <EndSemesterForm semesterId={activeSemester.id} />
-                  </div>
-                </details>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeSemesters.length > 0 ? (
-          <details className="mb-8">
-            <summary className="cursor-pointer text-sm text-muted underline">
-              add another semester
-            </summary>
-            <div className="card mt-3 p-6">
-              <CreateSemesterForm />
-            </div>
-          </details>
-        ) : (
-          <div className="card mb-8 p-6">
-            <p className="mb-4 text-sm text-muted">
-              no active semester right now. start one whenever your sem
-              begins.
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-8 pb-6 lg:max-w-5xl lg:px-6 lg:pt-10">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <LogoMark className="h-10 w-10 lg:hidden" />
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">
+              hey, {session?.user?.name}
+            </h1>
+            <p className="text-sm text-muted lowercase">
+              {new Date(today + "T00:00:00Z").toLocaleDateString("en-US", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                timeZone: "UTC",
+              })}
             </p>
+          </div>
+        </div>
+        <LogoutForm
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/login" });
+          }}
+        />
+      </div>
+
+      {activeSemesters.length > 0 ? (
+        <SemesterSwitcher
+          items={activeSemesters.map((s) => ({
+            id: s.id,
+            name: s.name,
+            content: <SemesterOverview semester={s} marks={marksFor(s.id)} />,
+          }))}
+        />
+      ) : (
+        <section className="card p-6 lg:mx-auto lg:w-full lg:max-w-md">
+          <LogoMark className="h-14 w-14" />
+          <h2 className="mt-4 text-lg font-semibold">nothing here yet</h2>
+          <p className="mt-1 mb-5 text-sm text-muted">
+            no active semester right now. start one whenever your sem begins.
+          </p>
+          <CreateSemesterForm />
+        </section>
+      )}
+
+      {activeSemesters.length > 0 && (
+        <details className="card mt-4 p-5">
+          <summary className="cursor-pointer text-sm font-medium">
+            add another semester
+          </summary>
+          <div className="mt-4 lg:max-w-md">
             <CreateSemesterForm />
           </div>
-        )}
+        </details>
+      )}
 
-        {pastSemesters.length > 0 && (
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
-              past semesters
-            </p>
-            <ul className="flex flex-col gap-2">
-              {pastSemesters.map((s) => {
-                const pct = percentBySemester.get(s.id);
-                const isSafe =
-                  pct !== null &&
-                  pct !== undefined &&
-                  pct >= s.requiredPercentage / 100;
-                return (
-                  <li key={s.id}>
-                    <Link
-                      href={`/dashboard/sessions/${s.id}`}
-                      className="card flex items-center justify-between px-4 py-3 text-sm transition-colors hover:border-primary"
-                    >
-                      <span className="flex flex-col">
-                        <span className="font-medium">{s.name}</span>
-                        <span className="text-muted">
-                          {s.startDate} → {s.endDate}
-                        </span>
+      {pastSemesters.length > 0 && (
+        <section className="mt-8" aria-labelledby="past-heading">
+          <h2
+            id="past-heading"
+            className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted"
+          >
+            past semesters
+          </h2>
+          <ul className="grid gap-2 lg:grid-cols-2">
+            {pastSemesters.map((s) => {
+              const stats = computeAttendanceStats(
+                s.startDate,
+                s.endDate!,
+                marksFor(s.id),
+                s.requiredPercentage,
+              );
+              const tone = toneFor(stats, s.requiredPercentage);
+              return (
+                <li key={s.id}>
+                  <Link
+                    href={`/dashboard/sessions/${s.id}`}
+                    className="card flex min-h-16 items-center justify-between px-4 py-3 text-sm transition-colors hover:border-primary"
+                  >
+                    <span className="flex flex-col">
+                      <span className="font-medium">{s.name}</span>
+                      <span className="text-muted">
+                        {s.startDate} → {s.endDate}
                       </span>
-                      {pct !== null && pct !== undefined && (
-                        <span
-                          className="text-lg font-bold"
-                          style={{
-                            color: isSafe
-                              ? "var(--status-present)"
-                              : "var(--status-absent)",
-                          }}
-                        >
-                          {Math.round(pct * 1000) / 10}%
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </div>
+                    </span>
+                    {stats.percentage !== null && tone && (
+                      <span
+                        className="tnum text-lg font-semibold"
+                        style={{ color: TONE_COLOR[tone] }}
+                      >
+                        {toPercent(stats.percentage)}%
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }

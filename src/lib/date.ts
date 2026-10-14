@@ -14,6 +14,12 @@ export function todayISO(): string {
   return toISODate(new Date());
 }
 
+export function addDaysISO(dateISO: string, delta: number): string {
+  const d = parseISODate(dateISO);
+  d.setUTCDate(d.getUTCDate() + delta);
+  return toISODate(d);
+}
+
 // sunday = 0, saturday = 6 — both count as weekend holidays by default
 export function isWeekend(dateISO: string): boolean {
   const dow = parseISODate(dateISO).getUTCDay();

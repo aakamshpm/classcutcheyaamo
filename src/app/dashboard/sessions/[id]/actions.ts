@@ -103,6 +103,7 @@ export async function setDayStatus(
     });
 
   revalidatePath(`/dashboard/sessions/${semesterId}`);
+  revalidatePath("/dashboard");
 }
 
 // removes any explicit mark, reverting the day back to its default
@@ -122,4 +123,5 @@ export async function clearDayStatus(semesterId: string, date: string) {
     );
 
   revalidatePath(`/dashboard/sessions/${semesterId}`);
+  revalidatePath("/dashboard");
 }
