@@ -46,12 +46,15 @@ export function monthLabel(year: number, month: number): string {
 }
 
 // returns a grid of weeks, each week is 7 cells, padded with null for days
-// outside the month so the grid always lines up under weekday headers
+// outside the month so the grid always lines up under weekday headers.
+// weeks start on sunday unless `mondayFirst` is set.
 export function getMonthMatrix(
   year: number,
   month: number,
+  mondayFirst = false,
 ): (string | null)[][] {
-  const startDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const firstDow = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const startDow = mondayFirst ? (firstDow + 6) % 7 : firstDow;
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
   const cells: (string | null)[] = [];

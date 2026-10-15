@@ -6,7 +6,13 @@ import {
 } from "@/lib/attendance";
 import { parseISODate, todayISO } from "@/lib/date";
 import { KERALA_HOLIDAY_MAP } from "@/lib/kerala-holidays";
-import { toneFor, toPercent, type Tone } from "@/lib/semester-status";
+import {
+  CHIP,
+  plural,
+  toneFor,
+  toPercent,
+  verdict,
+} from "@/lib/semester-status";
 import { currentWeek } from "@/lib/week";
 import { AttendanceRing } from "./attendance-ring";
 import { EndSemesterForm } from "./end-semester-form";
@@ -19,31 +25,6 @@ type Semester = {
   startDate: string;
   requiredPercentage: number;
 };
-
-const CHIP: Record<Tone, { className: string; label: string }> = {
-  safe: { className: "chip chip-safe", label: "safe aanu" },
-  edge: { className: "chip chip-edge", label: "edge-il aanu" },
-  danger: { className: "chip chip-danger", label: "pani paalum" },
-};
-
-function plural(n: number, word: string) {
-  return `${n} ${word}${n === 1 ? "" : "s"}`;
-}
-
-function verdict(
-  tone: Tone,
-  safeToBunk: number,
-  needToAttend: number,
-  required: number,
-) {
-  if (tone === "danger") {
-    return `attend the next ${plural(needToAttend, "day")} in a row to get back to ${required}%`;
-  }
-  if (safeToBunk === 0) {
-    return `no cuts left, one more absence and you're below ${required}%`;
-  }
-  return `you can skip ${plural(safeToBunk, "more day")} and stay at ${required}%+`;
-}
 
 // the home view of one active semester: gauge, counts, today's mark and the
 // week. laid out as one column on phones and two on wide screens.

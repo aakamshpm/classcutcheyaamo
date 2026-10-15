@@ -1,49 +1,13 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
-import {
-  CheckIcon,
-  CloseIcon,
-  HalfIcon,
-} from "@/app/components/icons";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import {
   clearDayStatus,
   setDayStatus,
   type DayStatus,
 } from "../sessions/[id]/actions";
-
-const OPTIONS: {
-  status: DayStatus;
-  label: string;
-  tone: string;
-  icon: React.ReactNode;
-}[] = [
-  {
-    status: "present",
-    label: "present",
-    tone: "present",
-    icon: <CheckIcon className="h-4 w-4" />,
-  },
-  {
-    status: "half_day",
-    label: "half day",
-    tone: "half",
-    icon: <HalfIcon className="h-4 w-4" />,
-  },
-  {
-    status: "absent",
-    label: "absent",
-    tone: "absent",
-    icon: <CloseIcon className="h-4 w-4" />,
-  },
-  {
-    status: "holiday",
-    label: "no class",
-    tone: "holiday",
-    icon: null,
-  },
-];
+import { STATUS_OPTIONS } from "./status-options";
 
 // marks today in one tap. `status` is what counts for today right now (an
 // explicit mark, or the kerala-holiday default). tapping the active choice
@@ -102,7 +66,7 @@ export function TodayCard({
       )}
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {OPTIONS.map((o) => {
+        {STATUS_OPTIONS.map((o) => {
           const active = shown.status === o.status;
           return (
             <button

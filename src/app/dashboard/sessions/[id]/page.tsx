@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
-import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
-import { AttendanceCalendar } from "./components/attendance-calendar";
-import { PercentageSummary } from "./components/percentage-summary";
+import { CalendarView } from "./components/calendar-view";
 import { EditStartDateForm } from "./components/edit-start-date-form";
 import { EditRequiredPercentageForm } from "./components/edit-required-percentage-form";
 import { EndSemesterForm } from "@/app/dashboard/components/end-semester-form";
@@ -28,27 +26,40 @@ export default async function SessionPage({
   if (!semester) notFound();
 
   const marks = await db
-    .select({ date: attendanceDays.date, status: attendanceDays.status })
+    .select({
+      date: attendanceDays.date,
+      status: attendanceDays.status,
+      note: attendanceDays.note,
+    })
     .from(attendanceDays)
     .where(eq(attendanceDays.semesterId, semester.id));
 
   return (
-    <main className="flex flex-1 flex-col items-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <Link href="/dashboard" className="text-sm text-muted underline">
-          ← back
-        </Link>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-8 pb-6 lg:max-w-5xl lg:px-6 lg:pt-10">
+      <div className="mb-5">
+        <h1 className="text-xl font-semibold tracking-tight">
           {semester.name}
         </h1>
-        <p className="mt-1 text-sm text-muted">
+        <p className="text-sm text-muted">
           {semester.startDate}{" "}
-          {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"}
+          {semester.endDate ? `→ ${semester.endDate}` : "→ ongoing"} · needs{" "}
+          {semester.requiredPercentage}%
         </p>
-        <p className="mt-1 text-sm text-muted">
-          needs {semester.requiredPercentage}%
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-3">
+      </div>
+
+      <CalendarView
+        semesterId={semester.id}
+        startDate={semester.startDate}
+        endDate={semester.endDate}
+        requiredPercentage={semester.requiredPercentage}
+        marks={marks}
+      />
+
+      <details className="card mt-4 p-5">
+        <summary className="cursor-pointer text-sm font-medium">
+          semester settings
+        </summary>
+        <div className="mt-4 flex flex-col items-start gap-3">
           <EditStartDateForm
             semesterId={semester.id}
             currentStartDate={semester.startDate}
@@ -68,25 +79,7 @@ export default async function SessionPage({
             </details>
           )}
         </div>
-
-        <div className="mt-6">
-          <PercentageSummary
-            startDate={semester.startDate}
-            endDate={semester.endDate}
-            marks={marks}
-            requiredPercentage={semester.requiredPercentage}
-          />
-        </div>
-
-        <div className="mt-8">
-          <AttendanceCalendar
-            semesterId={semester.id}
-            startDate={semester.startDate}
-            endDate={semester.endDate}
-            marks={marks}
-          />
-        </div>
-      </div>
+      </details>
     </main>
   );
 }

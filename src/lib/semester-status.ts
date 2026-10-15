@@ -24,3 +24,29 @@ export const TONE_COLOR: Record<Tone, string> = {
 export function toPercent(fraction: number): number {
   return Math.round(fraction * 1000) / 10;
 }
+
+export const CHIP: Record<Tone, { className: string; label: string }> = {
+  safe: { className: "chip chip-safe", label: "safe aanu" },
+  edge: { className: "chip chip-edge", label: "edge-il aanu" },
+  danger: { className: "chip chip-danger", label: "pani paalum" },
+};
+
+export function plural(n: number, word: string) {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
+
+// the one-line plain-english read on where a semester stands
+export function verdict(
+  tone: Tone,
+  safeToBunk: number,
+  needToAttend: number,
+  required: number,
+) {
+  if (tone === "danger") {
+    return `attend the next ${plural(needToAttend, "day")} in a row to get back to ${required}%`;
+  }
+  if (safeToBunk === 0) {
+    return `no cuts left, one more absence and you're below ${required}%`;
+  }
+  return `you can skip ${plural(safeToBunk, "more day")} and stay at ${required}%+`;
+}

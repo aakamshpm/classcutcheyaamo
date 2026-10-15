@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
+import { NOTE_MAX } from "@/lib/day-note";
 
 async function assertOwnsSemester(semesterId: string, userId: string) {
   const [semester] = await db
@@ -100,6 +101,34 @@ export async function setDayStatus(
     .onConflictDoUpdate({
       target: [attendanceDays.semesterId, attendanceDays.date],
       set: { status, updatedAt: new Date() },
+    });
+
+  revalidatePath(`/dashboard/sessions/${semesterId}`);
+  revalidatePath("/dashboard");
+}
+
+// sets a day's mark together with its note. a blank note clears any old one.
+// the note lives on the mark's row, so a day needs a status to carry one.
+export async function saveDay(
+  semesterId: string,
+  date: string,
+  status: DayStatus,
+  note: string,
+) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("not logged in");
+  await assertOwnsSemester(semesterId, session.user.id);
+
+  const trimmed = note.trim();
+  if (trimmed.length > NOTE_MAX) throw new Error("note is too long");
+  const cleanNote = trimmed === "" ? null : trimmed;
+
+  await db
+    .insert(attendanceDays)
+    .values({ semesterId, date, status, note: cleanNote })
+    .onConflictDoUpdate({
+      target: [attendanceDays.semesterId, attendanceDays.date],
+      set: { status, note: cleanNote, updatedAt: new Date() },
     });
 
   revalidatePath(`/dashboard/sessions/${semesterId}`);
