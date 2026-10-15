@@ -12,10 +12,12 @@ export function AttendanceRing({
   percent,
   required,
   tone,
+  caption = "overall attendance",
 }: {
   percent: number | null;
   required: number;
   tone: Tone | null;
+  caption?: string;
 }) {
   const color = tone ? TONE_COLOR[tone] : "var(--status-holiday)";
   const filled = percent === null ? 0 : Math.min(100, Math.max(0, percent));
@@ -73,7 +75,7 @@ export function AttendanceRing({
           {percent === null ? "--" : percent}
           {percent !== null && <span className="text-xl">%</span>}
         </p>
-        <p className="text-xs text-muted">overall attendance</p>
+        <p className="text-xs text-muted">{caption}</p>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarIcon, HomeIcon } from "@/app/components/icons";
+import { CalendarIcon, HomeIcon, SimulatorIcon } from "@/app/components/icons";
 import { LogoMark } from "@/app/components/logo-mark";
 
 type Tab = {
@@ -35,6 +35,12 @@ export function DashboardNav({ calendarHref }: { calendarHref: string | null }) 
     });
   }
   if (tabs.length < 2) return null;
+  tabs.push({
+    href: "/dashboard/simulator",
+    label: "simulator",
+    icon: <SimulatorIcon className="h-6 w-6" />,
+    isActive: (p) => p.startsWith("/dashboard/simulator"),
+  });
 
   return (
     <>

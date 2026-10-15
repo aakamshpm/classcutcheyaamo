@@ -116,3 +116,29 @@ export function HalfIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function SimulatorIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 7h8M17 7h2M5 17h2M11 17h8" />
+      <circle cx="15" cy="7" r="2" />
+      <circle cx="9" cy="17" r="2" />
+    </Icon>
+  );
+}
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </Icon>
+  );
+}
+
+export function MinusIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 12h14" />
+    </Icon>
+  );
+}
