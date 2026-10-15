@@ -30,6 +30,8 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#121714" },
   ],
   colorScheme: "light dark",
+  // lets env(safe-area-inset-*) report the gesture bar / notch insets
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

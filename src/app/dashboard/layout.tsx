@@ -25,7 +25,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex flex-1 flex-col pb-20 lg:pb-0">
+    <div className="flex flex-1 flex-col pb-[calc(6.25rem+env(safe-area-inset-bottom))] lg:pb-0">
       <DashboardNav calendarHref={calendarHref} />
       {children}
     </div>

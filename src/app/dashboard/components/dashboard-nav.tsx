@@ -57,9 +57,10 @@ export function DashboardNav({ calendarHref }: { calendarHref: string | null }) 
     <>
       <nav
         aria-label="main"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-card-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 bg-background px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden"
       >
-        <ul className="mx-auto flex max-w-md">
+        {/* floats on the page colour so it doesn't merge with a white system gesture bar below it */}
+        <ul className="mx-auto flex max-w-md overflow-hidden rounded-[var(--radius)] border border-card-border bg-card">
           {tabs.map((tab) => {
             const active = tab.isActive(pathname);
             return (
