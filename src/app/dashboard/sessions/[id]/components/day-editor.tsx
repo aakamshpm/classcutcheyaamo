@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { CloseIcon } from "@/app/components/icons";
 import { STATUS_OPTIONS } from "@/app/dashboard/components/status-options";
 import type { AttendanceStats, DayStatus } from "@/lib/attendance";
@@ -45,8 +45,28 @@ export function DayEditor({
 }) {
   const [status, setStatus] = useState<DayStatus | null>(current.status);
   const [note, setNote] = useState(current.note);
+  // set while the sheet slides back down, right before it is removed
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const noteId = useId();
+
+  // phones play the slide-down first; wide screens show a plain panel (and
+  // reduced motion skips animation), so those close straight away
+  const requestClose = useCallback(() => {
+    if (closing) return;
+    const instant =
+      window.matchMedia("(min-width: 1024px)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (instant) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+    closeTimer.current = setTimeout(onClose, 200);
+  }, [closing, onClose]);
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
@@ -54,11 +74,11 @@ export function DayEditor({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [requestClose]);
 
   const changed = status !== current.status || note.trim() !== current.note;
   const canSave = online && !saving && status !== null && changed;
@@ -71,13 +91,13 @@ export function DayEditor({
         type="button"
         tabIndex={-1}
         aria-label="close"
-        onClick={onClose}
-        className="fixed inset-0 z-40 bg-foreground/30 lg:hidden"
+        onClick={requestClose}
+        className={`${closing ? "backdrop-out" : "backdrop-in"} fixed inset-0 z-40 bg-foreground/30 lg:hidden`}
       />
       <section
         role="dialog"
         aria-labelledby="day-heading"
-        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-[var(--radius)] border border-b-0 border-card-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] lg:static lg:z-auto lg:mx-0 lg:max-h-none lg:max-w-none lg:rounded-[var(--radius)] lg:border-b lg:pb-5"
+        className={`${closing ? "sheet-out" : "sheet-in"} fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-[var(--radius)] border border-b-0 border-card-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] lg:static lg:z-auto lg:mx-0 lg:max-h-none lg:max-w-none lg:rounded-[var(--radius)] lg:border-b lg:pb-5`}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -98,7 +118,7 @@ export function DayEditor({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="close"
             className="-mt-1 -mr-2 flex h-12 w-12 items-center justify-center rounded-full text-muted hover:bg-status-holiday-bg"
           >
@@ -116,18 +136,12 @@ export function DayEditor({
                 aria-pressed={active}
                 disabled={!online}
                 onClick={() => setStatus(o.status)}
-                className="flex min-h-12 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border text-sm font-semibold transition-colors disabled:opacity-60"
+                className="choice"
                 style={
-                  active
-                    ? {
-                        background: `var(--status-${o.tone}-bg)`,
-                        color: `var(--status-${o.tone})`,
-                        borderColor: `var(--status-${o.tone})`,
-                      }
-                    : {
-                        background: "var(--card)",
-                        borderColor: "var(--card-border)",
-                      }
+                  {
+                    "--tone": `var(--status-${o.tone})`,
+                    "--tone-bg": `var(--status-${o.tone}-bg)`,
+                  } as React.CSSProperties
                 }
               >
                 {o.icon}

@@ -33,6 +33,7 @@ import {
   TONE_COLOR,
   verdict,
 } from "@/lib/semester-status";
+import { showToast } from "@/lib/toast";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { clearDayStatus, saveDay } from "../actions";
 import { DayEditor, type DayState } from "./day-editor";
@@ -192,7 +193,12 @@ export function CalendarView({
     setSelected(null);
     startTransition(async () => {
       applyMark({ date, mark: { status, note: note.trim() || null } });
-      await saveDay(semesterId, date, status, note);
+      try {
+        await saveDay(semesterId, date, status, note);
+        showToast("saved");
+      } catch {
+        showToast("couldn't save, try again", "error");
+      }
     });
   }
 
@@ -200,7 +206,12 @@ export function CalendarView({
     setSelected(null);
     startTransition(async () => {
       applyMark({ date, mark: null });
-      await clearDayStatus(semesterId, date);
+      try {
+        await clearDayStatus(semesterId, date);
+        showToast("day cleared");
+      } catch {
+        showToast("couldn't clear, try again", "error");
+      }
     });
   }
 

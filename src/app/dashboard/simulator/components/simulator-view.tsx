@@ -265,6 +265,7 @@ export function SimulatorView({
               percent={afterPercent}
               required={required}
               tone={tone}
+              animate={false}
               caption={count === 0 ? "right now" : `after ${verb}`}
             />
           </div>

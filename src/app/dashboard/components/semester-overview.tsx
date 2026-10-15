@@ -16,6 +16,7 @@ import {
 import { currentWeek } from "@/lib/week";
 import { AttendanceRing } from "./attendance-ring";
 import { EndSemesterForm } from "./end-semester-form";
+import { Reveal } from "./reveal";
 import { TodayCard } from "./today-card";
 import { WeekStrip } from "./week-strip";
 
@@ -68,7 +69,9 @@ export function SemesterOverview({
               </p>
             </div>
             {tone && (
-              <span className={CHIP[tone].className}>{CHIP[tone].label}</span>
+              <Reveal variant="pop" className={CHIP[tone].className}>
+                {CHIP[tone].label}
+              </Reveal>
             )}
           </div>
 
@@ -83,7 +86,11 @@ export function SemesterOverview({
               </div>
 
               <div className="gold-rule mx-auto mt-5 w-16" />
-              <p className="mt-4 text-center text-sm">
+              <Reveal
+                as="p"
+                variant="fade"
+                className="mt-4 text-center text-sm"
+              >
                 {stats && tone
                   ? verdict(
                       tone,
@@ -92,7 +99,7 @@ export function SemesterOverview({
                       semester.requiredPercentage,
                     )
                   : "mark a few days to see where you stand"}
-              </p>
+              </Reveal>
 
               {stats && stats.unmarkedDays > 0 && (
                 <p className="notice notice-warn mt-4">

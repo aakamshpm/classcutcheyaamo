@@ -1,6 +1,7 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
+import { showToast } from "@/lib/toast";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import {
   clearDayStatus,
@@ -35,15 +36,22 @@ export function TodayCard({
   >({ status, explicit: hasExplicitMark }, (_, next) => next);
 
   function choose(next: DayStatus) {
-    if (!online) return;
+    if (!online || pending) return;
     const clearing = shown.explicit && shown.status === next;
     startTransition(async () => {
-      if (clearing) {
-        setShown({ status: holidayName ? "holiday" : null, explicit: false });
-        await clearDayStatus(semesterId, date);
-      } else {
-        setShown({ status: next, explicit: true });
-        await setDayStatus(semesterId, date, next);
+      try {
+        if (clearing) {
+          setShown({ status: holidayName ? "holiday" : null, explicit: false });
+          await clearDayStatus(semesterId, date);
+          showToast("today's mark cleared");
+        } else {
+          setShown({ status: next, explicit: true });
+          await setDayStatus(semesterId, date, next);
+          const label = STATUS_OPTIONS.find((o) => o.status === next)?.label;
+          showToast(`marked ${label} for today`);
+        }
+      } catch {
+        showToast("couldn't save, try again", "error");
       }
     });
   }
@@ -72,21 +80,15 @@ export function TodayCard({
             <button
               key={o.status}
               type="button"
-              disabled={!online || pending}
+              disabled={!online}
               aria-pressed={active}
               onClick={() => choose(o.status)}
-              className="flex min-h-12 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border text-sm font-semibold transition-colors disabled:opacity-60"
+              className="choice"
               style={
-                active
-                  ? {
-                      background: `var(--status-${o.tone}-bg)`,
-                      color: `var(--status-${o.tone})`,
-                      borderColor: `var(--status-${o.tone})`,
-                    }
-                  : {
-                      background: "var(--card)",
-                      borderColor: "var(--card-border)",
-                    }
+                {
+                  "--tone": `var(--status-${o.tone})`,
+                  "--tone-bg": `var(--status-${o.tone}-bg)`,
+                } as React.CSSProperties
               }
             >
               {o.icon}

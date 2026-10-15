@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { OfflineBanner } from "./components/offline-banner";
 import { ServiceWorkerRegister } from "./components/service-worker-register";
+import { Toaster } from "./components/toaster";
 import { TopLoadingBar } from "./components/top-loading-bar";
 
 const dmSans = DM_Sans({
@@ -46,6 +47,7 @@ export default function RootLayout({
         </Suspense>
         <OfflineBanner />
         {children}
+        <Toaster />
         <ServiceWorkerRegister />
       </body>
     </html>
