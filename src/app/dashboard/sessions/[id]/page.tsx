@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
 import { CalendarView } from "./components/calendar-view";
+import { DeleteSemesterForm } from "./components/delete-semester-form";
 import { EditStartDateForm } from "./components/edit-start-date-form";
 import { EditRequiredPercentageForm } from "./components/edit-required-percentage-form";
 import { EndSemesterForm } from "@/app/dashboard/components/end-semester-form";
@@ -78,6 +79,13 @@ export default async function SessionPage({
               </div>
             </details>
           )}
+          <div className="mt-2 w-full border-t border-card-border pt-4">
+            <DeleteSemesterForm
+              semesterId={semester.id}
+              name={semester.name}
+              markedDays={marks.length}
+            />
+          </div>
         </div>
       </details>
     </main>

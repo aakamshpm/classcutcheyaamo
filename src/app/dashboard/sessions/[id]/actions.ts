@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
@@ -84,6 +85,32 @@ export async function updateRequiredPercentage(
   revalidatePath(`/dashboard/sessions/${semesterId}`);
   revalidatePath("/dashboard");
   return { success: true };
+}
+
+// the marked days go with the semester through the foreign key's cascade
+export async function deleteSemester(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "not logged in" };
+
+  const semesterId = String(formData.get("semesterId") ?? "");
+  if (!semesterId) return { error: "missing info" };
+
+  const deleted = await db
+    .delete(semesters)
+    .where(
+      and(eq(semesters.id, semesterId), eq(semesters.userId, session.user.id)),
+    )
+    .returning({ id: semesters.id });
+
+  if (deleted.length === 0) return { error: "semester not found" };
+
+  // the layout decides which tabs show, and the calendar tab points at a
+  // semester that may no longer exist
+  revalidatePath("/dashboard", "layout");
+  redirect("/dashboard");
 }
 
 export async function setDayStatus(

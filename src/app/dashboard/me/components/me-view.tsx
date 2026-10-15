@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRightIcon } from "@/app/components/icons";
 import { TONE_COLOR, type Tone } from "@/lib/semester-status";
 import { LogoutForm } from "../../components/logout-form";
+import { ChangePasswordRow, DeleteAccountRow } from "./account-actions";
 import { ThemePicker } from "./theme-picker";
 
 export type SemesterRow = {
@@ -105,7 +106,11 @@ export function MeView({
             <h2 id="account-heading" className="mb-2 text-lg font-semibold">
               account
             </h2>
-            <LogoutForm action={logout} />
+            <div className="flex flex-col divide-y divide-card-border">
+              <ChangePasswordRow />
+              <LogoutForm action={logout} />
+              <DeleteAccountRow username={username} />
+            </div>
           </section>
         </div>
       </div>

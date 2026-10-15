@@ -218,7 +218,10 @@ async function fetchAndStore(request, path, cache) {
   if (res.type === "opaqueredirect" || res.redirected) {
     return { res, saving: caches.delete(PAGES_CACHE) };
   }
-  if (!res.ok) return { res, saving: Promise.resolve() };
+  if (!res.ok) {
+    // the page is gone (a deleted semester), so drop the copy we kept of it
+    return { res, saving: res.status === 404 ? cache.delete(path) : Promise.resolve() };
+  }
 
   const forCache = stamp(res.clone());
   const forLinks = path === "/dashboard" ? res.clone() : null;

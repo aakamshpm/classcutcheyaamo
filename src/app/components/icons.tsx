@@ -160,6 +160,23 @@ export function LogoutIcon(props: IconProps) {
   );
 }
 
+export function KeyIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="8" cy="15" r="3.5" />
+      <path d="M10.5 12.5 19 4M16 7l2.5 2.5M13.5 9.5 15.5 11.5" />
+    </Icon>
+  );
+}
+
+export function TrashIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.8 12a1 1 0 0 0 1 .9h7.4a1 1 0 0 0 1-.9l.8-12M10 11v5M14 11v5" />
+    </Icon>
+  );
+}
+
 export function SunIcon(props: IconProps) {
   return (
     <Icon {...props}>
