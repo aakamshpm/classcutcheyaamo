@@ -1,6 +1,6 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import Link from "next/link";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { LogoMark } from "@/app/components/logo-mark";
 import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
@@ -8,7 +8,6 @@ import { computeAttendanceStats } from "@/lib/attendance";
 import { todayISO } from "@/lib/date";
 import { toneFor, toPercent, TONE_COLOR } from "@/lib/semester-status";
 import { CreateSemesterForm } from "./components/create-semester-form";
-import { LogoutForm } from "./components/logout-form";
 import { SemesterOverview } from "./components/semester-overview";
 import { SemesterSwitcher } from "./components/semester-switcher";
 
@@ -42,29 +41,21 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-8 pb-6 lg:max-w-5xl lg:px-6 lg:pt-10">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <LogoMark className="h-10 w-10 lg:hidden" />
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">
-              hey, {session?.user?.name}
-            </h1>
-            <p className="text-sm text-muted lowercase">
-              {new Date(today + "T00:00:00Z").toLocaleDateString("en-US", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                timeZone: "UTC",
-              })}
-            </p>
-          </div>
+      <div className="mb-6 flex items-center gap-3">
+        <LogoMark className="h-10 w-10 lg:hidden" />
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">
+            hey, {session?.user?.name}
+          </h1>
+          <p className="text-sm text-muted lowercase">
+            {new Date(today + "T00:00:00Z").toLocaleDateString("en-US", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              timeZone: "UTC",
+            })}
+          </p>
         </div>
-        <LogoutForm
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/login" });
-          }}
-        />
       </div>
 
       {activeSemesters.length > 0 ? (

@@ -3,34 +3,45 @@
 /* theme tokens: cream canvas, white cards with parchment borders, evergreen
    for actions, gold only as a hairline. flat, depth comes from borders and tints */
 :root {
-  --background: #fbf7ee;
-  --foreground: #1c2420;
+  /* every colour is a light/dark pair. which side applies comes from
+     color-scheme: the device setting by default, or the html data-theme
+     attribute when the user picked a theme themselves */
+  color-scheme: light dark;
 
-  --card: #ffffff;
-  --card-border: #eae3d2;
+  --background: light-dark(#fbf7ee, #121714);
+  --foreground: light-dark(#1c2420, #eef2ee);
+
+  --card: light-dark(#ffffff, #1a211d);
+  --card-border: light-dark(#eae3d2, #2b342f);
   /* kept dark enough for small helper text (lighter greys are ~3:1 on the cream) */
-  --muted: #6b746e;
+  --muted: light-dark(#6b746e, #9aa59d);
 
-  --primary: #1f6b4a;
-  --primary-foreground: #ffffff;
-  --gold: #b8912f;
+  --primary: light-dark(#1f6b4a, #5fc08f);
+  --primary-foreground: light-dark(#ffffff, #0b1f15);
+  --gold: light-dark(#b8912f, #d3ad4f);
 
   /* present = safe, absent = danger, half = edge, holiday = neutral */
-  --status-present: #2e8b57;
-  --status-present-bg: #e8f5e9;
-  --status-absent: #d14b3f;
-  --status-absent-bg: #fdeceb;
-  --status-half: #d9962b;
-  --status-half-bg: #faf5e8;
-  --status-holiday: #8c948f;
-  --status-holiday-bg: #f0efea;
+  --status-present: light-dark(#2e8b57, #5cc98f);
+  --status-present-bg: light-dark(#e8f5e9, #16301f);
+  --status-absent: light-dark(#d14b3f, #ef7d72);
+  --status-absent-bg: light-dark(#fdeceb, #3a201e);
+  --status-half: light-dark(#d9962b, #e6b04f);
+  --status-half-bg: light-dark(#faf5e8, #33291a);
+  --status-holiday: light-dark(#8c948f, #9aa59d);
+  --status-holiday-bg: light-dark(#f0efea, #232a26);
 
   /* loading placeholders and the highlight that sweeps over them */
-  --skeleton: #f1ebdd;
-  --skeleton-hi: #f8f3e7;
+  --skeleton: light-dark(#f1ebdd, #252d28);
+  --skeleton-hi: light-dark(#f8f3e7, #2f3933);
 
   --radius: 1rem; /* cards */
   --radius-control: 0.75rem; /* buttons and inputs */
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -51,33 +62,6 @@
   --color-status-half: var(--status-half);
   --color-status-half-bg: var(--status-half-bg);
   --font-sans: var(--font-dm-sans);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121714;
-    --foreground: #eef2ee;
-
-    --card: #1a211d;
-    --card-border: #2b342f;
-    --muted: #9aa59d;
-
-    --primary: #5fc08f;
-    --primary-foreground: #0b1f15;
-    --gold: #d3ad4f;
-
-    --status-present: #5cc98f;
-    --status-present-bg: #16301f;
-    --status-absent: #ef7d72;
-    --status-absent-bg: #3a201e;
-    --status-half: #e6b04f;
-    --status-half-bg: #33291a;
-    --status-holiday: #9aa59d;
-    --status-holiday-bg: #232a26;
-
-    --skeleton: #252d28;
-    --skeleton-hi: #2f3933;
-  }
 }
 
 body {

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
+import { themeInitScript } from "@/lib/theme";
 import { OfflineBanner } from "./components/offline-banner";
 import { ServiceWorkerRegister } from "./components/service-worker-register";
 import { Toaster } from "./components/toaster";
@@ -37,10 +38,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // data-theme is set by the script below before react hydrates
     <html
       lang="en"
       className={`${dmSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <Suspense fallback={null}>
           <TopLoadingBar />

@@ -31,6 +31,7 @@ const MAX_WARMED_PAGES = 12;
 // built from the same marks as the semester pages, so it is saved and
 // refreshed alongside them
 const SIMULATOR_PATH = "/dashboard/simulator";
+const ME_PATH = "/dashboard/me";
 const SESSION_LINK = /\/dashboard\/sessions\/[0-9a-f-]{36}/g;
 const BUILD_ASSET = /\/_next\/static\/[^"'\\\s<>)]+/g;
 
@@ -73,7 +74,7 @@ self.addEventListener("fetch", (event) => {
       response
         .then((res) => {
           if (!res.ok) return;
-          const paths = [toDashboardPath(url.pathname), "/dashboard", SIMULATOR_PATH];
+          const paths = [toDashboardPath(url.pathname), "/dashboard", SIMULATOR_PATH, ME_PATH];
           return scheduleRefresh(paths.filter(Boolean));
         })
         .catch(() => {}),
@@ -250,6 +251,8 @@ async function warmSessionPages(dashboardRes, cache) {
   const links = [...new Set(html.match(SESSION_LINK) || [])].slice(0, MAX_WARMED_PAGES);
   // the nav only links the simulator once there is a semester
   if (links.length > 0) links.push(SIMULATOR_PATH);
+  // the me tab is always there
+  links.push(ME_PATH);
   for (const link of links) {
     try {
       await ensureFresh(link, PAGE_MAX_AGE_MS, cache);

@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarIcon, HomeIcon, SimulatorIcon } from "@/app/components/icons";
+import {
+  CalendarIcon,
+  HomeIcon,
+  SimulatorIcon,
+  UserIcon,
+} from "@/app/components/icons";
 import { LogoMark } from "@/app/components/logo-mark";
 
 type Tab = {
@@ -14,7 +19,8 @@ type Tab = {
 
 // phones get a bottom tab bar, wide screens get the same tabs in a top bar.
 // `calendarHref` is the semester the calendar tab opens, null when the user
-// has no semester yet (then there's only home, so no nav at all).
+// has no semester yet (then the calendar and simulator have nothing to show,
+// so only home and me are there).
 export function DashboardNav({ calendarHref }: { calendarHref: string | null }) {
   const pathname = usePathname();
 
@@ -33,13 +39,18 @@ export function DashboardNav({ calendarHref }: { calendarHref: string | null }) 
       icon: <CalendarIcon className="h-6 w-6" />,
       isActive: (p) => p.startsWith("/dashboard/sessions"),
     });
+    tabs.push({
+      href: "/dashboard/simulator",
+      label: "simulator",
+      icon: <SimulatorIcon className="h-6 w-6" />,
+      isActive: (p) => p.startsWith("/dashboard/simulator"),
+    });
   }
-  if (tabs.length < 2) return null;
   tabs.push({
-    href: "/dashboard/simulator",
-    label: "simulator",
-    icon: <SimulatorIcon className="h-6 w-6" />,
-    isActive: (p) => p.startsWith("/dashboard/simulator"),
+    href: "/dashboard/me",
+    label: "me",
+    icon: <UserIcon className="h-6 w-6" />,
+    isActive: (p) => p.startsWith("/dashboard/me"),
   });
 
   return (

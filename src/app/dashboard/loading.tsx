@@ -6,23 +6,15 @@ export default function HomeLoading() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-8 pb-6 lg:max-w-5xl lg:px-6 lg:pt-10">
       <SkeletonRegion label="loading home">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <LogoMark className="h-10 w-10 lg:hidden" />
-            <div>
-              <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-                hey,
-                <SkelText width="6rem" textClass="text-xl" />
-              </h1>
-              <SkelText width="10rem" textClass="text-sm" />
-            </div>
+        <div className="mb-6 flex items-center gap-3">
+          <LogoMark className="h-10 w-10 lg:hidden" />
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+              hey,
+              <SkelText width="6rem" textClass="text-xl" />
+            </h1>
+            <SkelText width="10rem" textClass="text-sm" />
           </div>
-          <span
-            aria-hidden="true"
-            className="text-sm font-medium text-muted underline"
-          >
-            log out
-          </span>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
