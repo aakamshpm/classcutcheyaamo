@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { attendanceDays, semesters, users } from "@/db/schema";
 import { computeAttendanceStats } from "@/lib/attendance";
 import { todayISO } from "@/lib/date";
-import { plural, toneFor, toPercent } from "@/lib/semester-status";
+import { isRunning, plural, toneFor, toPercent } from "@/lib/semester-status";
 import { MeView } from "./components/me-view";
 
 export default async function MePage() {
@@ -42,12 +42,13 @@ export default async function MePage() {
   const today = todayISO();
   // running semesters first, then finished ones newest first
   const ordered = [
-    ...allSemesters.filter((s) => s.endDate === null),
-    ...allSemesters.filter((s) => s.endDate !== null),
+    ...allSemesters.filter((s) => isRunning(s.endDate, today)),
+    ...allSemesters.filter((s) => !isRunning(s.endDate, today)),
   ];
 
   const rows = ordered.map((s) => {
-    const lastDay = s.endDate ?? today;
+    const running = isRunning(s.endDate, today);
+    const lastDay = running ? today : s.endDate!;
     const stats =
       s.startDate <= lastDay
         ? computeAttendanceStats(
@@ -59,12 +60,13 @@ export default async function MePage() {
         : null;
     const tone = stats ? toneFor(stats, s.requiredPercentage) : null;
     let detail = `needs ${s.requiredPercentage}%`;
-    if (s.endDate === null && stats && tone) {
+    if (running && stats && tone) {
       detail +=
         tone === "danger"
           ? ` · attend ${plural(stats.needToAttend, "day")} in a row`
           : ` · ${plural(stats.safeToBunk, "day")} to spare`;
-    } else if (s.endDate !== null) {
+      if (s.endDate) detail += ` · ends ${s.endDate}`;
+    } else if (!running) {
       detail += ` · ended ${s.endDate}`;
     }
     return {

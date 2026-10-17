@@ -14,6 +14,11 @@ export function toneFor(
   return "safe";
 }
 
+// a semester with an end date still runs until that day has passed
+export function isRunning(endDate: string | null, today: string): boolean {
+  return endDate === null || endDate >= today;
+}
+
 export const TONE_COLOR: Record<Tone, string> = {
   safe: "var(--status-present)",
   edge: "var(--status-half)",

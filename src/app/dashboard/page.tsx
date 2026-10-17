@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
 import { computeAttendanceStats } from "@/lib/attendance";
 import { todayISO } from "@/lib/date";
-import { toneFor, toPercent, TONE_COLOR } from "@/lib/semester-status";
+import { isRunning, toneFor, toPercent, TONE_COLOR } from "@/lib/semester-status";
 import { CreateSemesterForm } from "./components/create-semester-form";
 import { SemesterOverview } from "./components/semester-overview";
 import { SemesterSwitcher } from "./components/semester-switcher";
@@ -34,8 +34,8 @@ export default async function DashboardPage() {
     : [];
 
   const today = todayISO();
-  const activeSemesters = allSemesters.filter((s) => s.endDate === null);
-  const pastSemesters = allSemesters.filter((s) => s.endDate !== null);
+  const activeSemesters = allSemesters.filter((s) => isRunning(s.endDate, today));
+  const pastSemesters = allSemesters.filter((s) => !isRunning(s.endDate, today));
   const marksFor = (id: string) =>
     allMarks.filter((m) => m.semesterId === id);
 

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { attendanceDays, semesters } from "@/db/schema";
 import { todayISO } from "@/lib/date";
+import { isRunning } from "@/lib/semester-status";
 import { SimulatorView } from "./components/simulator-view";
 
 export default async function SimulatorPage() {
@@ -16,7 +17,7 @@ export default async function SimulatorPage() {
     .from(semesters)
     .where(eq(semesters.userId, userId))
     .orderBy(desc(semesters.startDate))
-    .then((rows) => rows.filter((s) => s.endDate === null));
+    .then((rows) => rows.filter((s) => isRunning(s.endDate, todayISO())));
 
   const marks = active.length
     ? await db

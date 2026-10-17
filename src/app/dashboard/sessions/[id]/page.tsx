@@ -7,7 +7,7 @@ import { CalendarView } from "./components/calendar-view";
 import { DeleteSemesterForm } from "./components/delete-semester-form";
 import { EditStartDateForm } from "./components/edit-start-date-form";
 import { EditRequiredPercentageForm } from "./components/edit-required-percentage-form";
-import { EndSemesterForm } from "@/app/dashboard/components/end-semester-form";
+import { EditEndDateForm } from "@/app/dashboard/components/edit-end-date-form";
 
 export default async function SessionPage({
   params,
@@ -69,16 +69,10 @@ export default async function SessionPage({
             semesterId={semester.id}
             currentRequiredPercentage={semester.requiredPercentage}
           />
-          {!semester.endDate && (
-            <details className="text-sm text-muted">
-              <summary className="cursor-pointer">
-                sem got over? end it here
-              </summary>
-              <div className="mt-3">
-                <EndSemesterForm semesterId={semester.id} />
-              </div>
-            </details>
-          )}
+          <EditEndDateForm
+            semesterId={semester.id}
+            currentEndDate={semester.endDate}
+          />
           <div className="mt-2 w-full border-t border-card-border pt-4">
             <DeleteSemesterForm
               semesterId={semester.id}

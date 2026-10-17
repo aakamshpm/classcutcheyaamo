@@ -15,7 +15,7 @@ import {
 } from "@/lib/semester-status";
 import { currentWeek } from "@/lib/week";
 import { AttendanceRing } from "./attendance-ring";
-import { EndSemesterForm } from "./end-semester-form";
+import { EditEndDateForm } from "./edit-end-date-form";
 import { Reveal } from "./reveal";
 import { TodayCard } from "./today-card";
 import { WeekStrip } from "./week-strip";
@@ -24,6 +24,7 @@ type Semester = {
   id: string;
   name: string;
   startDate: string;
+  endDate: string | null;
   requiredPercentage: number;
 };
 
@@ -157,7 +158,7 @@ export function SemesterOverview({
 
         {started && (
           <WeekStrip
-            days={currentWeek(today, semester.startDate, null, marks)}
+            days={currentWeek(today, semester.startDate, semester.endDate, marks)}
           />
         )}
 
@@ -169,14 +170,12 @@ export function SemesterOverview({
             open calendar
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
-          <details className="border-t border-card-border pt-3">
-            <summary className="cursor-pointer text-sm text-muted">
-              sem got over? end it here
-            </summary>
-            <div className="mt-3">
-              <EndSemesterForm semesterId={semester.id} />
-            </div>
-          </details>
+          <div className="border-t border-card-border pt-3">
+            <EditEndDateForm
+              semesterId={semester.id}
+              currentEndDate={semester.endDate}
+            />
+          </div>
         </div>
       </div>
     </div>

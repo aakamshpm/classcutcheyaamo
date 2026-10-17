@@ -2,6 +2,8 @@ import { desc, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { semesters } from "@/db/schema";
+import { todayISO } from "@/lib/date";
+import { isRunning } from "@/lib/semester-status";
 import { DashboardNav } from "./components/dashboard-nav";
 
 export default async function DashboardLayout({
@@ -20,7 +22,7 @@ export default async function DashboardLayout({
       .from(semesters)
       .where(eq(semesters.userId, session.user.id))
       .orderBy(desc(semesters.startDate));
-    const target = rows.find((s) => s.endDate === null) ?? rows[0];
+    const target = rows.find((s) => isRunning(s.endDate, todayISO())) ?? rows[0];
     if (target) calendarHref = `/dashboard/sessions/${target.id}`;
   }
 

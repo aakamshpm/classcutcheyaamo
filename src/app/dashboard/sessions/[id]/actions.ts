@@ -56,6 +56,44 @@ export async function updateStartDate(
   return { success: true };
 }
 
+// sets, changes or (with a blank date) removes the end date. a semester keeps
+// running until the end date has passed, so a date still ahead is fine.
+export async function updateEndDate(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "not logged in" };
+
+  const semesterId = String(formData.get("semesterId") ?? "");
+  const rawEndDate = String(formData.get("endDate") ?? "");
+  const endDate = rawEndDate === "" ? null : rawEndDate;
+
+  if (!semesterId) return { error: "missing info" };
+  if (endDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+    return { error: "that doesn't look like a date" };
+  }
+
+  const [semester] = await db
+    .select({ startDate: semesters.startDate })
+    .from(semesters)
+    .where(
+      and(eq(semesters.id, semesterId), eq(semesters.userId, session.user.id)),
+    )
+    .limit(1);
+
+  if (!semester) return { error: "semester not found" };
+  if (endDate !== null && endDate < semester.startDate) {
+    return { error: "end date can't be before the start date" };
+  }
+
+  await db.update(semesters).set({ endDate }).where(eq(semesters.id, semesterId));
+
+  // the layout picks the calendar tab's semester from who is still running
+  revalidatePath("/dashboard", "layout");
+  return { success: true };
+}
+
 export async function updateRequiredPercentage(
   _prevState: ActionResult | null,
   formData: FormData,
